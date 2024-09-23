@@ -30,6 +30,9 @@ namespace SistemaVenta.DAL.DBContext
         public virtual DbSet<Usuario> Usuarios { get; set; } = null!;
         public virtual DbSet<Venta> Venta { get; set; } = null!;
 
+        public virtual DbSet<Caja> Cajas { get; set; } = null!;
+        public virtual DbSet<Cliente> Clientes { get; set; }
+        public virtual DbSet<Proveedor> Proveedores { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
           

@@ -1,0 +1,87 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h2>Registro de Clientes</h2>
+
+<!-- Formulario para registrar un nuevo cliente -->
+<form asp-action="Crear" method="post">
+    <div class="form-group">
+        <label for="Nombre">Nombre:</label>
+        <input type="text" class="form-control" id="Nombre" name="Nombre" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Apellidos">Apellidos:</label>
+        <input type="text" class="form-control" id="Apellidos" name="Apellidos" required />
+    </div>
+
+    <div class="form-group">
+        <label for="TipoIdentificacion">Tipo de Identificación:</label>
+        <select class="form-control" id="TipoIdentificacion" name="TipoIdentificacion" required>
+            <option value="Cédula">Cédula</option>
+            <option value="RNC">RNC</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="NumeroIdentificacion">Número de Identificación:</label>
+        <input type="text" class="form-control" id="NumeroIdentificacion" name="NumeroIdentificacion" required />
+    </div>
+
+    <div class="form-group">
+        <label for="NumeroTelefono">Número de Teléfono:</label>
+        <input type="tel" class="form-control" id="NumeroTelefono" name="NumeroTelefono" />
+    </div>
+
+    <div class="form-group">
+        <label for="NumeroCelular">Número de Celular:</label>
+        <input type="tel" class="form-control" id="NumeroCelular" name="NumeroCelular" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Correo">Correo Electrónico:</label>
+        <input type="email" class="form-control" id="Correo" name="Correo" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Direccion">Dirección:</label>
+        <textarea class="form-control" id="Direccion" name="Direccion" rows="3" required></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Registrar Cliente</button>
+</form>
+
+<!-- Tabla para mostrar todos los clientes registrados -->
+<h3>Lista de Clientes Registrados</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Apellidos</th>
+            <th>Tipo de Identificación</th>
+            <th>Número de Identificación</th>
+            <th>Número de Teléfono</th>
+            <th>Número de Celular</th>
+            <th>Correo Electrónico</th>
+            <th>Dirección</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var cliente in Model)
+        {
+            <tr>
+                <td>@cliente.Nombre</td>
+                <td>@cliente.Apellidos</td>
+                <td>@cliente.TipoIdentificacion</td>
+                <td>@cliente.NumeroIdentificacion</td>
+                <td>@cliente.NumeroTelefono</td>
+                <td>@cliente.NumeroCelular</td>
+                <td>@cliente.Correo</td>
+                <td>@cliente.Direccion</td>
+            </tr>
+        }
+    </tbody>
+</table>
+

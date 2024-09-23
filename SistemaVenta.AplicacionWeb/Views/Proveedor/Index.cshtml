@@ -1,0 +1,84 @@
+﻿@model SistemaVenta.AplicacionWeb.Models.ViewModels.ProveedorViewModel
+
+@{
+    ViewData["Title"] = "Lista de Proveedores";
+}
+
+
+
+<h2>Agregar/Editar Proveedor</h2>
+
+<form asp-action="Guardar" method="post" id="form-proveedor">
+    <input type="hidden" id="IdProveedor" name="IdProveedor" value="@Model.IdProveedor" />
+
+    <div class="form-group">
+        <label for="Identificacion">Identificación</label>
+        <input type="text" id="Identificacion" name="Identificacion" value="@Model.Identificacion" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Nombre">Nombre</label>
+        <input type="text" id="Nombre" name="Nombre" value="@Model.Nombre" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Correo">Correo</label>
+        <input type="email" id="Correo" name="Correo" value="@Model.Correo" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Telefono">Teléfono</label>
+        <input type="text" id="Telefono" name="Telefono" value="@Model.Telefono" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Direccion">Dirección</label>
+        <input type="text" id="Direccion" name="Direccion" value="@Model.Direccion" class="form-control" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+</form>
+<h2>Lista de Proveedores</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>IdProveedor</th>
+            <th>Identificación</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Dirección</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var proveedor in Model.ProveedoresList)
+        {
+            <tr>
+                <td>@proveedor.IdProveedor</td>
+                <td>@proveedor.Identificacion</td>
+                <td>@proveedor.Nombre</td>
+                <td>@proveedor.Correo</td>
+                <td>@proveedor.Telefono</td>
+                <td>@proveedor.Direccion</td>
+                <td>
+                    <button onclick="editarProveedor(@proveedor.IdProveedor, '@proveedor.Identificacion', '@proveedor.Nombre', '@proveedor.Correo', '@proveedor.Telefono', '@proveedor.Direccion')">Editar</button>
+                    <form method="post" asp-action="Delete" asp-route-id="@proveedor.IdProveedor" style="display:inline;">
+                        <button type="submit">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    function editarProveedor(id, identificacion, nombre, correo, telefono, direccion) {
+        document.getElementById('IdProveedor').value = id;
+        document.getElementById('Identificacion').value = identificacion;
+        document.getElementById('Nombre').value = nombre;
+        document.getElementById('Correo').value = correo;
+        document.getElementById('Telefono').value = telefono;
+        document.getElementById('Direccion').value = direccion;
+    }
+</script>

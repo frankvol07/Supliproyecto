@@ -73,8 +73,10 @@
                                 <div class="form-row">
                                     <div class="form-group col-sm-6">
                                         <label for="txtCodigoBarra">Codigo Barra</label>
-                                        <input type="text" class="form-control form-control-sm input-validar" id="txtCodigoBarra" name="Codigo Barra">
+                                        <!-- El campo se deshabilitará para evitar la modificación -->
+                                        <input type="text" class="form-control form-control-sm input-validar" id="txtCodigoBarra" name="Codigo Barra" disabled>
                                     </div>
+
                                     <div class="form-group col-sm-6">
                                         <label for="txtMarca">Marca</label>
                                         <input type="text" class="form-control form-control-sm input-validar" id="txtMarca" name="Marca">
@@ -86,6 +88,7 @@
                                         <input type="text" class="form-control form-control-sm input-validar" id="txtDescripcion" name="Descripcion">
                                     </div>
                                 </div>
+
                                 <div class="form-row">
                                     <div class="form-group col-sm-6">
                                         <label for="cboCategoria">Categoria</label>
@@ -93,6 +96,17 @@
                                             <option value="0">seleccionar</option>
                                         </select>
                                     </div>
+                                    <div class="form-group col-sm-6">
+                                        <label for="cboProveedor">Proveedor</label>
+                                        <select class="form-control form-control-sm" id="cboProveedor">
+                                            <option value="0">Seleccionar Proveedor</option>
+                                            @foreach (var proveedor in ViewBag.Proveedores)
+                                            {
+                                                <option value="@proveedor.IdProveedor">@proveedor.Nombre</option>
+                                            }
+                                        </select>
+                                    </div>
+
                                     <div class="form-group col-sm-6">
                                         <label for="txtStock">Stock</label>
                                         <input type="text" class="form-control form-control-sm input-validar" id="txtStock" name="Stock">

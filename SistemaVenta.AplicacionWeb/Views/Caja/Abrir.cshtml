@@ -1,0 +1,78 @@
+﻿@model SistemaVenta.AplicacionWeb.Models.ViewModels.CajaViewModel
+@{
+    ViewData["Title"] = "Abrir o Cerrar Caja";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Gestión de Caja</h2>
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-success">@ViewBag.Message</div>
+}
+
+<form method="post" id="cajaForm">
+    <div class="form-group">
+        <label asp-for="FechaApertura">Fecha de Apertura</label>
+        <input asp-for="FechaApertura" class="form-control" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" readonly />
+        <span asp-validation-for="FechaApertura" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="MontoInicial">Monto Inicial</label>
+        <input asp-for="MontoInicial" class="form-control" type="number" />
+        <span asp-validation-for="MontoInicial" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="MontoFinal">Monto Final</label>
+        <input asp-for="MontoFinal" class="form-control" type="number" />
+        <span asp-validation-for="MontoFinal" class="text-danger"></span>
+    </div>
+
+    <!-- Modal para supervisor -->
+    <div class="modal fade" id="supervisorModal" tabindex="-1" role="dialog" aria-labelledby="supervisorModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="supervisorModalLabel">Autorización de Supervisor</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="supervisorNombre">Credenciales de supervisor</label>
+                        <input type="text" id="supervisorNombre" name="supervisorNombre" class="form-control" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" onclick="submitForm()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button type="button" class="btn btn-primary" onclick="showModal('abrir')">Abrir Caja</button>
+    <button type="button" class="btn btn-danger" onclick="showModal('cerrar')">Cerrar Caja</button>
+</form>
+
+@section Scripts {
+    <script>
+        function showModal(action) {
+            // Cambiar la acción del formulario antes de mostrar el modal
+            if (action === 'abrir') {
+                $('#cajaForm').attr('action', '/Caja/Abrir');
+            } else {
+                $('#cajaForm').attr('action', '/Caja/Cerrar');
+            }
+            $('#supervisorModal').modal('show');
+        }
+
+        function submitForm() {
+            // Enviar el formulario cuando se confirme el modal
+            $('#cajaForm').submit();
+        }
+    </script>
+}

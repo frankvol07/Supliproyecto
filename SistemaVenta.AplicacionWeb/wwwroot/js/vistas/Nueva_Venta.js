@@ -264,3 +264,4 @@ $("#btnTerminarVenta").click(function () {
         });
 
 });
+
