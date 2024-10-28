@@ -109,7 +109,7 @@ $("#cboBuscarProducto").on("select2:select", function (e) {
     let producto_encontrado = ProductosParaVenta.filter(p => p.idProducto == data.id)
     if (producto_encontrado.length > 0) {
 
-        $("#cboBuscarProducto").val("").trigger("change")
+         $("#cboBuscarProducto").val("").trigger("change")
         toastr.warning("", "El producto ya fue agregado")
         return false
 
@@ -141,7 +141,7 @@ $("#cboBuscarProducto").on("select2:select", function (e) {
                 marcaProducto: data.marca,
                 descripcionProducto: data.text,
                 categoriaProducto: data.categoria,
-                catidad: parseInt(valor),
+                cantidad: parseInt(valor),
                 precio: data.precio.toString(),
                 total: (parseFloat(valor) * data.precio).toString()
 
@@ -225,7 +225,7 @@ $("#btnTerminarVenta").click(function () {
         idTipoDocumentoVenta: $("#cboTipoDocumentoVenta").val(),
         documentoCliente: $("#txtDocumentoCliente").val(),
         nombreCliente: $("#txtNombreCliente").val(),
-        subTotal: $("#SubTotal").val(),
+        subTotal: $("#txtSubTotal").val(),
         impuestoTotal: $("#txtIGV").val(),
         total: $("#txtTotal").val(),
         DetalleVenta: vmDetalleVenta
@@ -264,4 +264,3 @@ $("#btnTerminarVenta").click(function () {
         });
 
 });
-

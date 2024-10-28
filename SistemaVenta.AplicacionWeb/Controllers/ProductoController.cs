@@ -28,6 +28,17 @@ namespace SistemaVenta.AplicacionWeb.Controllers
 
         public IActionResult Index()
         {
+            // Obtener la lista de proveedores
+            var proveedores = _context.Proveedores
+                .Select(p => new ProveedorViewModel
+                {
+                    IdProveedor = p.IdProveedor,
+                    Nombre = p.Nombre
+                }).ToList();
+
+            // Pasar la lista de proveedores a la vista
+            ViewBag.Proveedores = proveedores;
+
             return View();
         }
 

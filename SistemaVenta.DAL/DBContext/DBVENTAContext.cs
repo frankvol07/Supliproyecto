@@ -33,6 +33,12 @@ namespace SistemaVenta.DAL.DBContext
         public virtual DbSet<Caja> Cajas { get; set; } = null!;
         public virtual DbSet<Cliente> Clientes { get; set; }
         public virtual DbSet<Proveedor> Proveedores { get; set; }
+        
+        public virtual DbSet<Factura> Facturas { get; set; }
+        public virtual DbSet<ProductoServicio> ProductosServicios { get; set; }
+        public virtual DbSet<DetallesFactura> DetallesFacturas { get; set; }
+        public virtual DbSet<FacturaProveedor> FacturaProveedores { get; set; }
+        public virtual DbSet<Pago> Pagos { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
           
@@ -481,7 +487,20 @@ namespace SistemaVenta.DAL.DBContext
                     .HasConstraintName("FK__Venta__idUsuario__403A8C7D");
             });
 
+           
+
             OnModelCreatingPartial(modelBuilder);
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Factura>()
+                .HasOne(f => f.Cliente)
+                .WithMany(c => c.Facturas)
+                .HasForeignKey(f => f.ClienteID);
+
+            modelBuilder.Entity<Pago>()
+                .HasOne(p => p.Factura)
+                .WithMany(f => f.Pagos)
+                .HasForeignKey(p => p.FacturaID);
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

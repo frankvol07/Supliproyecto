@@ -18,9 +18,39 @@ namespace SistemaVenta.AplicacionWeb.Controllers
         }
 
         // GET: Caja/Abrir
-        public IActionResult Abrir()
+        public async Task<IActionResult> Abrir()
         {
-            return View(new CajaViewModel());
+            // Buscar la caja más antigua sin cerrar
+            var cajaSinCerrar = await _context.Cajas
+                .Where(c => c.FechaCierre == null && c.Estado == true)
+                .OrderBy(c => c.FechaApertura)
+                .FirstOrDefaultAsync();
+
+            if (cajaSinCerrar != null)
+            {
+                // Si hay una caja sin cerrar, mostrar un mensaje en la vista
+                ViewBag.Message = $"No puedes abrir una nueva caja hasta que cierres la caja abierta el {cajaSinCerrar.FechaApertura.ToString("yyyy-MM-dd")}.";
+
+                // Devolver el ViewModel con la fecha de apertura sin cerrar
+                var model = new CajaViewModel
+                {
+                    CajaId = cajaSinCerrar.CajaId,
+                    FechaApertura = cajaSinCerrar.FechaApertura,
+                    MontoInicial = cajaSinCerrar.MontoInicial,
+                    Estado = cajaSinCerrar.Estado,
+                    IsMontoInicialEditable = false // Campo no editable si hay una caja sin cerrar
+                };
+
+                return View(model);
+            }
+
+            // Si no hay cajas sin cerrar, proceder con la lógica normal para abrir una caja
+            ViewBag.Message = null;
+            return View(new CajaViewModel
+            {
+                FechaApertura = DateTime.Now,
+                IsMontoInicialEditable = true // Editable al abrir una nueva caja
+            });
         }
 
         // POST: Caja/Abrir
@@ -33,7 +63,7 @@ namespace SistemaVenta.AplicacionWeb.Controllers
             if (supervisor == null)
             {
                 ModelState.AddModelError("", "El nombre del supervisor es incorrecto.");
-                return View("Abrir");
+                return View("Abrir", model); // Pasar el modelo de vuelta a la vista
             }
 
             if (ModelState.IsValid)
@@ -73,13 +103,20 @@ namespace SistemaVenta.AplicacionWeb.Controllers
             if (supervisor == null)
             {
                 ModelState.AddModelError("", "El nombre del supervisor es incorrecto.");
-                return View("Abrir");
+                return View("Abrir", model); // Pasar el modelo de vuelta a la vista
             }
 
             if (model.FechaApertura == default(DateTime))
             {
                 ModelState.AddModelError("", "Fecha de apertura no válida.");
-                return View("Abrir");
+                return View("Abrir", model); // Pasar el modelo de vuelta a la vista
+            }
+
+            // Verificar que el monto final esté relleno
+            if (model.MontoFinal <= 0) // Aquí puedes ajustar la validación según lo que consideres válido
+            {
+                ModelState.AddModelError("MontoFinal", "El monto final debe ser mayor que cero.");
+                return View("Abrir", model); // Pasar el modelo de vuelta a la vista
             }
 
             // Buscar la caja abierta por fecha de apertura
@@ -88,19 +125,19 @@ namespace SistemaVenta.AplicacionWeb.Controllers
             if (caja == null)
             {
                 ModelState.AddModelError("", "No hay caja abierta para la fecha proporcionada.");
-                return View("Abrir");
+                return View("Abrir", model); // Pasar el modelo de vuelta a la vista
             }
 
             // Actualizar la caja con la fecha de cierre y el monto final
-            caja.FechaCierre = model.FechaCierre ?? System.DateTime.Now;
-            caja.MontoFinal = model.MontoFinal;
+            caja.FechaCierre = DateTime.Now; // Si no se proporciona, usar la fecha y hora actual
+            caja.MontoFinal = model.MontoFinal; // Verifica que model.MontoFinal no sea null
             caja.Estado = false; // Marcar como cerrada
 
             _context.Cajas.Update(caja);
             await _context.SaveChangesAsync();
 
             ViewBag.Message = "Caja cerrada exitosamente.";
-            return View("Abrir");
+            return RedirectToAction("Abrir"); // Redirigir a Abrir para evitar reenvío del formulario
         }
     }
 }

@@ -20,6 +20,7 @@ namespace SistemaVenta.AplicacionWeb.Models.ViewModels
         [Range(0, double.MaxValue, ErrorMessage = "El monto final debe ser positivo.")]
         public decimal? MontoFinal { get; set; }
         public bool Estado { get; set; }
+        public bool IsMontoInicialEditable { get; set; }
     }
 
 }

@@ -38,20 +38,38 @@ namespace SistemaVenta.AplicacionWeb.Controllers
 
         public async Task<IActionResult> NuevaVenta()
         {
-            // Comprobar si hay una caja abierta en la fecha actual
+
             var fechaActual = DateTime.Now.Date;
             var cajaAbierta = await _context.Cajas
                 .FirstOrDefaultAsync(c => c.FechaApertura.Date == fechaActual && c.Estado == true);
 
             if (cajaAbierta == null)
             {
-                ViewBag.CajaCerrada = true; // Esto activa el anuncio
-                return View(); // Mostrar la vista sin permitir ventas
+                TempData["MensajeError"] = "La caja está cerrada. No se pueden realizar ventas.";
+                return RedirectToAction("MostrarMensajeCajaCerrada");
             }
 
-            ViewBag.CajaCerrada = false; // No hay caja cerrada, permitir ventas
+            // Obtener la lista de clientes
+            var clientes = await _context.Clientes.ToListAsync();
+            if (clientes == null || !clientes.Any())
+            {
+                TempData["MensajeError"] = "No se encontraron clientes disponibles.";
+                return RedirectToAction("Index");
+            }
+
+            ViewBag.Clientes = clientes; 
+            ViewBag.EsCajaCerrada = false;
+
             return View();
         }
+
+
+
+        public IActionResult MostrarMensajeCajaCerrada()
+        {
+            return View("NuevaVenta");
+        }
+
 
         public IActionResult HistorialVenta()
         {
@@ -76,6 +94,16 @@ namespace SistemaVenta.AplicacionWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> RegistrarVenta([FromBody] VMVenta modelo)
         {
+            // Verificar si la caja está cerrada antes de proceder
+            var fechaActual = DateTime.Now.Date;
+            var cajaAbierta = await _context.Cajas
+                .FirstOrDefaultAsync(c => c.FechaApertura.Date == fechaActual && c.Estado == true);
+
+            if (cajaAbierta == null)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, "La caja está cerrada. No se pueden realizar ventas.");
+            }
+
             GenericResponse<VMVenta> gResponse = new GenericResponse<VMVenta>();
 
             try
@@ -100,6 +128,47 @@ namespace SistemaVenta.AplicacionWeb.Controllers
             }
             return StatusCode(StatusCodes.Status200OK, gResponse);
         }
+
+
+
+        [HttpPost]
+        public IActionResult CrearVenta(CxCobrarViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                // Crear una nueva factura
+                var factura = new Factura
+                {
+                    ClienteID = model.ClienteId,
+                    FechaEmision = DateTime.Now, // Fecha actual
+                    FechaVencimiento = DateTime.Now.AddDays(30), // Fecha + 30 días
+                    MontoTotal = model.MontoTotal,
+                    Estado = "Pendiente" // Estado por defecto
+                };
+
+                _context.Facturas.Add(factura);
+                _context.SaveChanges(); // Guarda la factura para obtener el ID
+
+                // Crear un nuevo pago
+                var pago = new Pago
+                {
+                    FacturaID = factura.FacturaID, // ID de la factura recién creada
+                    MontoPagado = 0, // Monto pagado inicial
+                    FechaPago = DateTime.Now, // Fecha actual
+                    Recargo = null // Recargo opcional, inicializado en null
+                };
+
+                _context.Pagos.Add(pago);
+                _context.SaveChanges(); // Guarda el pago
+
+                // Redirige a la misma vista después del proceso
+                return RedirectToAction("NuevaVenta");
+            }
+
+            // Si hay errores, vuelve a mostrar el formulario
+            return View(model);
+        }
+
 
         public async Task<IActionResult> Historial(string numeroVenta, string fechaInicio, string fechaFin)
         {

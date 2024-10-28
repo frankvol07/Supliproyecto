@@ -1,4 +1,8 @@
-﻿@model SistemaVenta.AplicacionWeb.Models.ViewModels.CxCobrarViewModel
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
 
 @{
     ViewData["Title"] = "Nueva Venta";
@@ -6,7 +10,11 @@
 }
 
 @section Estilos {
+    <!-- ============================================================
+      =ESTILOS PARA ESTA PAGINA
+      ===============================================================-->
     <link href="~/vendor/select2/select2.min.css" rel="stylesheet">
+
     <style>
         .select2 {
             width: 100% !important;
@@ -21,9 +29,10 @@
     </div>
 }
 
+<!-- Begin Page Content -->
 <div class="container-fluid">
-    <!-- Eliminamos el atributo action -->
-    <form method="post" id="formNuevaVenta">
+    <form method="post" action="CrearVenta" id="formNuevaVenta">
+        <!-- Agrega el formulario aquí -->
         <div class="row">
             <div class="col-sm-8">
                 <div class="row">
@@ -62,6 +71,7 @@
                                         <input type="text" class="form-control form-control-sm" id="txtClienteId" name="ClienteID" placeholder="ID del cliente" readonly />
                                     </div>
                                 </div>
+
                             </div>
                         </div>
                     </div>
@@ -95,13 +105,13 @@
                                             <tbody>
                                             </tbody>
                                         </table>
-
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
             <div class="col-sm-4">
                 <div class="row">
@@ -134,7 +144,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="inputGroupTotal">Total</span>
                                     </div>
-                                    <input type="text" class="form-control text-right" aria-label="Small" name="MontoTotal" aria-describedby="inputGroupTotal" id="txtTotal" readonly>
+                                    <input type="text" class="form-control text-right" aria-label="Small" name="MontoTotal" aria-describedby="inputGroupTotal" id="txtTotal" disabled>
                                 </div>
                             </div>
                         </div>
@@ -148,9 +158,8 @@
                                 <div class="form-group mb-0">
                                     <button type="submit" class="btn btn-success btn-sm btn-block" id="btnTerminarVenta">Terminar Venta</button>
                                 </div>
-                                <div class="form-group">
-                                    <label for="FacturaCredito">¿Factura a crédito?</label>
-                                    <input type="checkbox" asp-for="FacturaCredito" />
+                                <div class="form-group mt-2">
+                                    <button type="submit" class="btn btn-primary btn-sm btn-block" id="btnVentaCredito">Venta a crédito</button> <!-- Cambiado a tipo submit -->
                                 </div>
                             </div>
                         </div>
@@ -158,50 +167,34 @@
                 </div>
             </div>
         </div>
-    </form>
+    </form> <!-- Cierra el formulario aquí -->
 </div>
-
+<!-- /.container-fluid -->
 @section Scripts {
+
     <script>
         document.getElementById('cboClientes').addEventListener('change', function () {
             var selectedOption = this.options[this.selectedIndex];
-            document.getElementById('txtDocumentoCliente').value = selectedOption.value;
-            document.getElementById('txtNombreCliente').value = selectedOption.getAttribute('data-nombre');
-            document.getElementById('txtClienteId').value = selectedOption.getAttribute('data-clienteid');
-        });
 
-        document.getElementById('btnTerminarVenta').addEventListener('click', async function (event) {
-            event.preventDefault();
+            var documentoCliente = selectedOption.value; // Obtiene el número de identificación
+            var nombreCliente = selectedOption.getAttribute('data-nombre'); // Obtiene el nombre del cliente
+            var clienteId = selectedOption.getAttribute('data-clienteid'); // Obtiene el ID del cliente
 
-            const chkCredito = document.querySelector('input[asp-for="FacturaCredito"]');
-            if (!chkCredito.checked) {
-                alert("Debes activar el checkbox 'Factura a crédito' para continuar.");
-                return;
-            }
-
-            const formData = new FormData(document.getElementById('formNuevaVenta'));
-
-            try {
-                const response = await fetch('/Venta/CrearVenta', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    alert("Venta creada con éxito.");
-                    window.location.reload();
-                } else {
-                    alert("Error al crear la venta. Inténtalo de nuevo.");
-                }
-            } catch (error) {
-                console.error("Error en la solicitud:", error);
-                alert("Ocurrió un error inesperado.");
-            }
+            // Establece los valores de los campos de documento, nombre y ClienteId
+            document.getElementById('txtDocumentoCliente').value = documentoCliente;
+            document.getElementById('txtNombreCliente').value = nombreCliente;
+            document.getElementById('txtClienteId').value = clienteId; // Rellena el ID del cliente
         });
     </script>
 
+
+    <!-- ============================================================
+       =SCRIPTS PARA ESTA PAGINA
+       ===============================================================-->
     <script src="~/vendor/select2/select2.min.js"></script>
     <script src="~/vendor/select2/es.min.js"></script>
-    <script src="~/js/vistas/Nueva_Venta.js"></script>
+
+
 }
+
+

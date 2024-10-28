@@ -100,7 +100,7 @@ $(document).ready(function () {
 
 function mostrarModal(modelo = MODELO_BASE) {
     $("#txtId").val(modelo.idProducto);
-    $("#txtCodigoBarra").val(modelo.codigoBarra || modelo.CodigoBarra);  // Ajuste aquí para manejar ambos casos
+    $("#txtCodigoBarra").val(modelo.codigoBarra || modelo.CodigoBarra);  // Usar el código de barras existente
     $("#txtMarca").val(modelo.marca);
     $("#txtDescripcion").val(modelo.descripcion);
     $("#cboCategoria").val(modelo.idCategoria == 0 ? $("#cboCategoria option:first").val() : modelo.idCategoria);
@@ -112,7 +112,7 @@ function mostrarModal(modelo = MODELO_BASE) {
 
     // Bloquear el campo Código de Barras si es un producto existente
     if (modelo.idProducto > 0) {
-        $("#txtCodigoBarra").prop("disabled", true);
+        $("#txtCodigoBarra").prop("disabled", true); // Deshabilitar el campo si es un producto existente
     } else {
         // Generar un código de barras aleatorio para un producto nuevo
         const codigoBarraAuto = generarCodigoBarra();
@@ -121,6 +121,7 @@ function mostrarModal(modelo = MODELO_BASE) {
 
     $("#modalData").modal("show");
 }
+
 
 function generarCodigoBarra() {
     return Math.random().toString(36).substring(2, 12).toUpperCase();  // Generar código en mayúsculas

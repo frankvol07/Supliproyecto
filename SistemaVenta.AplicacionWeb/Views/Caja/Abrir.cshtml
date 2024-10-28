@@ -8,26 +8,28 @@
 
 @if (ViewBag.Message != null)
 {
-    <div class="alert alert-success">@ViewBag.Message</div>
+    <div class="alert alert-warning">@ViewBag.Message</div> <!-- Mensaje de advertencia si hay una caja sin cerrar -->
 }
 
 <form method="post" id="cajaForm">
     <div class="form-group">
         <label asp-for="FechaApertura">Fecha de Apertura</label>
-        <input asp-for="FechaApertura" class="form-control" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" readonly />
+        <input asp-for="FechaApertura" class="form-control" type="date"
+               value="@Model.FechaApertura.ToString("yyyy-MM-dd")" readonly />
         <span asp-validation-for="FechaApertura" class="text-danger"></span>
     </div>
 
     <div class="form-group">
         <label asp-for="MontoInicial">Monto Inicial</label>
-        <input asp-for="MontoInicial" class="form-control" type="number" />
+        <input asp-for="MontoInicial" class="form-control" type="number"
+               readonly="@(Model.IsMontoInicialEditable ? null : "readonly")" />
         <span asp-validation-for="MontoInicial" class="text-danger"></span>
     </div>
 
     <div class="form-group">
         <label asp-for="MontoFinal">Monto Final</label>
-        <input asp-for="MontoFinal" class="form-control" type="number" />
-        <span asp-validation-for="MontoFinal" class="text-danger"></span>
+        <input asp-for="MontoFinal" class="form-control" type="number" id="montoFinal" required="required" />
+        <span asp-validation-for="MontoFinal" class="text-danger"></span> <!-- Mostrar errores de validación -->
     </div>
 
     <!-- Modal para supervisor -->
@@ -48,13 +50,13 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" onclick="submitForm()">Confirmar</button>
+                    <button type="button" class="btn btn-primary" onclick="submitForm()">Confirmar</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <button type="button" class="btn btn-primary" onclick="showModal('abrir')">Abrir Caja</button>
+    <button type="button" class="btn btn-primary" onclick="showModal('abrir')" @(ViewBag.Message != null ? "disabled" : "")>Abrir Caja</button>
     <button type="button" class="btn btn-danger" onclick="showModal('cerrar')">Cerrar Caja</button>
 </form>
 
@@ -71,8 +73,32 @@
         }
 
         function submitForm() {
-            // Enviar el formulario cuando se confirme el modal
-            $('#cajaForm').submit();
+            var montoFinal = document.getElementById("montoFinal").value;
+
+            // Validación para evitar cerrar la caja si el Monto Final no es válido
+            if ($('#cajaForm').attr('action').includes('Cerrar') && (!montoFinal || montoFinal <= 0)) {
+                alert('Debe ingresar un Monto Final válido para cerrar la caja.');
+                return false; // Evitar el envío del formulario
+            }
+
+            // Enviar el formulario si la validación pasa
+            $.ajax({
+                type: "POST",
+                url: $('#cajaForm').attr('action'),
+                data: $('#cajaForm').serialize(),
+                success: function (response) {
+                    // Si la solicitud es exitosa, mostrar un mensaje
+                    if ($('#cajaForm').attr('action').includes('Cerrar')) {
+                        alert('La caja se ha cerrado exitosamente.');
+                    } else {
+                        alert('La caja se ha abierto exitosamente.');
+                    }
+                    window.location.href = '/Caja/Abrir'; // Redirigir a la página de apertura
+                },
+                error: function () {
+                    alert('Ocurrió un error al procesar la solicitud.');
+                }
+            });
         }
     </script>
 }

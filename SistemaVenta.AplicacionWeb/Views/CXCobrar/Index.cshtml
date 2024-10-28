@@ -1,0 +1,102 @@
+﻿@model List<SistemaVenta.AplicacionWeb.Models.ViewModels.FacturaViewModel>
+
+@{
+    ViewData["Title"] = "Cuentas por Cobrar";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h3 class="text-center">Cuentas x Cobrar</h3>
+
+    <div class="row">
+        <!-- Formulario de búsqueda -->
+        <div class="col-md-8">
+            <form asp-action="Buscar" method="post">
+                <div class="row mb-3">
+                    <div class="col">
+                        <label for="factura">No. Factura</label>
+                        <input type="text" id="factura" class="form-control" name="numeroFactura" />
+                    </div>
+                    <div class="col">
+                        <label for="cliente">Cliente</label>
+                        <input type="text" id="cliente" class="form-control" name="cliente" />
+                    </div>
+                    <div class="col">
+                        <label for="desde">Desde</label>
+                        <input type="date" id="desde" class="form-control" name="desde" />
+                    </div>
+                    <div class="col">
+                        <label for="hasta">Hasta</label>
+                        <input type="date" id="hasta" class="form-control" name="hasta" />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </form>
+        </div>
+
+        <!-- Totales -->
+        <div class="col-md-4">
+            <div class="form-group">
+                <label>Total Generado</label>
+                <input type="text" class="form-control" value="@ViewData["TotalGenerado"]" disabled />
+            </div>
+            <div class="form-group">
+                <label>Total Pendiente</label>
+                <input type="text" class="form-control" value="@ViewData["TotalPendiente"]" disabled />
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de facturas -->
+    <form method="post" asp-action="Abonar">
+        <table class="table mt-3 table-bordered">
+            <thead>
+                <tr>
+                    <th>Seleccionar</th>
+                    <th>No. Factura</th>
+                    <th>Identificación</th>
+                    <th>Nombre Cliente</th>
+                    <th>Monto Total</th>
+                    <th>Abono</th>
+                    <th>Pendiente</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Count > 0)
+                {
+                    foreach (var factura in Model)
+                    {
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="selectedFacturas" value="@factura.FacturaID" />
+                            </td>
+                            <td>@factura.FacturaID</td>
+                            <td>@factura.NumeroIdentificacion</td>
+                            <td>@factura.NombreCliente</td>
+                            <td>@factura.MontoTotal.ToString("C")</td>
+                            <td>
+                                <input type="number" class="form-control" name="abonos[@factura.FacturaID]" min="0" max="@factura.Pendiente" value="0" />
+                            </td>
+                            <td>@factura.Pendiente.ToString("C")</td>
+                            <td>@factura.Estado</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center">No se encontraron facturas</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Botón de pagar -->
+        <div class="row">
+            <div class="col-md-12 text-right">
+                <button type="submit" class="btn btn-success">Pagar</button>
+            </div>
+        </div>
+    </form>
+</div>

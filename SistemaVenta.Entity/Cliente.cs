@@ -16,6 +16,12 @@ namespace SistemaVenta.Entity
         public string NumeroTelefono { get; set; }   // Número de Teléfono
         public string NumeroCelular { get; set; }    // Número de Celular
         public string Correo { get; set; }           // Correo Electrónico
-        public string Direccion { get; set; }        // Dirección
+        public string Direccion { get; set; }
+        public decimal? CreditoDisponible { get; set; }  // Nullable por si el valor es opcional
+        public decimal? LimiteCredito { get; set; }      // Nullable por si el valor es opcional
+
+        // Relación con Facturas
+        public ICollection<Factura> Facturas { get; set; }
+        // Dirección
     }
 }

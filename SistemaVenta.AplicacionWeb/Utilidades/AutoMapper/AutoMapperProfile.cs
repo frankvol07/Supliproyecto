@@ -10,6 +10,7 @@ namespace SistemaVenta.AplicacionWeb.Utilidades.Automapper
     {
         public AutoMapperProfile()
         {
+
             #region Rol
             CreateMap<Rol, VMRol>().ReverseMap();
             #endregion Rol
@@ -90,6 +91,7 @@ namespace SistemaVenta.AplicacionWeb.Utilidades.Automapper
                     destino.Precio,
                     opt => opt.MapFrom(origen => decimal.Parse(origen.Precio, new CultureInfo("es-DO")))
                 );
+
             #endregion
 
 
@@ -222,6 +224,7 @@ namespace SistemaVenta.AplicacionWeb.Utilidades.Automapper
                 opt => opt.MapFrom(origen => origen.InverseIdMenuPadreNavigation)
                );
             #endregion
+
 
 
         }

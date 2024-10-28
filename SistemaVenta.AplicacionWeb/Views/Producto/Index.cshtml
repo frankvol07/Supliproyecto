@@ -74,7 +74,7 @@
                                     <div class="form-group col-sm-6">
                                         <label for="txtCodigoBarra">Codigo Barra</label>
                                         <!-- El campo se deshabilitará para evitar la modificación -->
-                                        <input type="text" class="form-control form-control-sm input-validar" id="txtCodigoBarra" name="Codigo Barra" disabled>
+                                        <input type="text" class="form-control form-control-sm input-validar" id="txtCodigoBarra" name="Codigo Barra" >
                                     </div>
 
                                     <div class="form-group col-sm-6">
@@ -88,22 +88,22 @@
                                         <input type="text" class="form-control form-control-sm input-validar" id="txtDescripcion" name="Descripcion">
                                     </div>
                                 </div>
+                                <div class="form-group col-sm-6">
+                                    <label for="cboProveedor">Proveedor</label>
+                                    <select class="form-control form-control-sm" id="cboProveedor" name="ProveedorId">
+                                        <option value="0">Seleccionar Proveedor</option>
+                                        @foreach (var proveedor in ViewBag.Proveedores)
+                                        {
+                                            <option value="@proveedor.IdProveedor">@proveedor.Nombre</option>
+                                        }
+                                    </select>
+                                </div>
 
                                 <div class="form-row">
                                     <div class="form-group col-sm-6">
                                         <label for="cboCategoria">Categoria</label>
                                         <select class="form-control form-control-sm" id="cboCategoria">
                                             <option value="0">seleccionar</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group col-sm-6">
-                                        <label for="cboProveedor">Proveedor</label>
-                                        <select class="form-control form-control-sm" id="cboProveedor">
-                                            <option value="0">Seleccionar Proveedor</option>
-                                            @foreach (var proveedor in ViewBag.Proveedores)
-                                            {
-                                                <option value="@proveedor.IdProveedor">@proveedor.Nombre</option>
-                                            }
                                         </select>
                                     </div>
 
