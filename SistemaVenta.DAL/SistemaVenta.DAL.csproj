@@ -8,6 +8,9 @@
 
   <ItemGroup>
     <PackageReference Include="iTextSharp" Version="5.5.13.4" />
+    <PackageReference Include="JSprint" Version="1.0.1" />
+    <PackageReference Include="JSPrintManager.js" Version="7.0.2" />
+    <PackageReference Include="RawPrint.NetStd" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>

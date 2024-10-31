@@ -29,16 +29,22 @@ namespace SistemaVenta.AplicacionWeb.Controllers
         public IActionResult Index()
         {
             // Obtener la lista de proveedores
-            var proveedores = _context.Proveedores
-                .Select(p => new ProveedorViewModel
-                {
-                    IdProveedor = p.IdProveedor,
-                    Nombre = p.Nombre
-                }).ToList();
+            var productos = _context.Productos
+    .Select(p => new VMProducto
+    {
+        IdProducto = p.IdProducto,
+        CodigoBarra = p.CodigoBarra,
+        Marca = p.Marca,
+        Descripcion = p.Descripcion,
+        IdCategoria = p.IdCategoria,
+        NombreCategoria = p.IdCategoriaNavigation.Descripcion,
+        Stock = p.Stock,
+        UrlImagen = p.UrlImagen,
+        Precio = p.Precio.HasValue ? p.Precio.Value.ToString("F2") : "0.00", // Convierte a string
+        EsActivo = p.EsActivo == true ? 1 : 0 // Convierte a int
+    }).ToList();
 
-            // Pasar la lista de proveedores a la vista
-            ViewBag.Proveedores = proveedores;
-
+            return View(productos); 
             return View();
         }
 
@@ -152,5 +158,83 @@ namespace SistemaVenta.AplicacionWeb.Controllers
         }
 
 
+        [HttpPost]
+        public IActionResult Guardar(VMProducto vmProducto)
+        {
+            if (ModelState.IsValid)
+            {
+                Producto producto;
+
+                if (vmProducto.IdProducto == 0) // Si IdProducto es 0, es un producto nuevo
+                {
+                    producto = new Producto
+                    {
+                        CodigoBarra = vmProducto.CodigoBarra,
+                        Marca = vmProducto.Marca,
+                        Descripcion = vmProducto.Descripcion,
+                        Stock = vmProducto.Stock,
+                        Precio = decimal.Parse(vmProducto.Precio),
+                        EsActivo = vmProducto.EsActivo == 1
+                    };
+                    _context.Productos.Add(producto);
+                }
+                else // Si IdProducto es diferente de 0, es una actualización
+                {
+                    producto = _context.Productos.Find(vmProducto.IdProducto);
+                    if (producto == null)
+                        return NotFound();
+
+                    producto.CodigoBarra = vmProducto.CodigoBarra;
+                    producto.Marca = vmProducto.Marca;
+                    producto.Descripcion = vmProducto.Descripcion;
+                    producto.Stock = vmProducto.Stock;
+                    producto.Precio = decimal.Parse(vmProducto.Precio);
+                    producto.EsActivo = vmProducto.EsActivo == 1;
+
+                    _context.Productos.Update(producto);
+                }
+
+                _context.SaveChanges();
+                return RedirectToAction("Index"); // Redirigir a la lista de productos
+            }
+
+            // En caso de que el modelo no sea válido, volver a la lista de productos
+            return RedirectToAction("Index");
+        }
+
+
+        // GET: /Producto/Eliminar/{id}
+        public async Task<IActionResult> Eliminar2(int id)
+        {
+            var producto = await _context.Productos.FindAsync(id);
+            if (producto != null)
+            {
+                _context.Productos.Remove(producto);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: /Producto/GetProducto/{id}
+        [HttpGet]
+        public async Task<IActionResult> GetProducto(int id)
+        {
+            var producto = await _context.Productos.FindAsync(id);
+            if (producto == null) return NotFound();
+
+            var vmProducto = new VMProducto
+            {
+                IdProducto = producto.IdProducto,
+                CodigoBarra = producto.CodigoBarra,
+                Marca = producto.Marca,
+                Descripcion = producto.Descripcion,
+                Stock = producto.Stock,
+                Precio = producto.Precio.HasValue ? producto.Precio.Value.ToString("F2") : "0.00", // Convierte a string
+                EsActivo = producto.EsActivo == true ? 1 : 0 // Convierte a int
+            };
+
+            return Json(vmProducto); // Retorna el producto como JSON
+        }
     }
 }
+

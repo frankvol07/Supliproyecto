@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using SistemaVenta.DAL.DBContext; // Agregado para el contexto de base de datos
 using Microsoft.EntityFrameworkCore;
+using iTextSharp.text.pdf;
+using iTextSharp.text;
 
 namespace SistemaVenta.AplicacionWeb.Controllers
 {
@@ -57,7 +59,7 @@ namespace SistemaVenta.AplicacionWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            ViewBag.Clientes = clientes; 
+            ViewBag.Clientes = clientes;
             ViewBag.EsCajaCerrada = false;
 
             return View();
@@ -198,5 +200,58 @@ namespace SistemaVenta.AplicacionWeb.Controllers
             var archivoPDF = _converter.Convert(pdf);
             return File(archivoPDF, "application/pdf");
         }
+        [HttpPost]
+        public IActionResult GenerarFactura([FromBody] FacturaViewModels factura)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                // Tamaño de 80mm de ancho (227 puntos) y longitud ajustable (por ejemplo, 350 puntos)
+                var pageSize = new Rectangle(227, 400);
+                var document = new Document(pageSize, 10, 10, 10, 10);
+                var writer = PdfWriter.GetInstance(document, memoryStream);
+                document.Open();
+
+                // Encabezado de la factura
+                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14);
+                var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 10);
+
+                document.Add(new Paragraph("========Factura========", titleFont) { Alignment = Element.ALIGN_CENTER });
+                document.Add(new Paragraph("\n"));
+
+                // Detalles del cliente
+                document.Add(new Paragraph($"Cliente: {factura.nombreCliente}", normalFont));
+                document.Add(new Paragraph($"Documento: {factura.documentoCliente}", normalFont));
+                document.Add(new Paragraph($"ID Cliente: {factura.clienteId}", normalFont));
+                document.Add(new Paragraph("\n"));
+
+                // Lista de productos
+                document.Add(new Paragraph("Productos:", normalFont));
+                foreach (var producto in factura.productos)
+                {
+                    document.Add(new Paragraph($"- Producto: {producto.nombreProducto}", normalFont));
+                    document.Add(new Paragraph($"  Cantidad: {producto.cantidad}", normalFont));
+                    document.Add(new Paragraph($"  Precio: {producto.precio}", normalFont));
+                    document.Add(new Paragraph($"  Total: {producto.total}\n", normalFont));
+                }
+
+                document.Add(new Paragraph("==================================", normalFont));
+                document.Add(new Paragraph($"Sub Total: {factura.subTotal}", normalFont));
+                document.Add(new Paragraph($"IGV: {factura.igv}", normalFont));
+                document.Add(new Paragraph($"Total: {factura.total}", normalFont));
+                document.Add(new Paragraph("\n"));
+
+                // Mensaje de agradecimiento
+                document.Add(new Paragraph("===Gracias por su compra===", titleFont) { Alignment = Element.ALIGN_CENTER });
+
+                document.Close();
+                writer.Close();
+
+                // Retornar el PDF
+                Response.Headers["Content-Disposition"] = "inline; filename=Factura.pdf";
+                Response.ContentType = "application/pdf";
+                return File(memoryStream.ToArray(), "application/pdf");
+            }
+        }
+
     }
 }

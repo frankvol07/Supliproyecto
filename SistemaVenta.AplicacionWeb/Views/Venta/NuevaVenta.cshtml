@@ -22,8 +22,7 @@
 }
 
 <div class="container-fluid">
-    <!-- Eliminamos el atributo action -->
-    <form method="post" id="formNuevaVenta">
+
         <div class="row">
             <div class="col-sm-8">
                 <div class="row">
@@ -87,7 +86,7 @@
                                                 <tr>
                                                     <th></th>
                                                     <th>Producto</th>
-                                                    <th>Cantidad</th>
+                                                    <th>Cantidad</th> <!-- Asegúrate de que este encabezado sea correcto -->
                                                     <th>Precio</th>
                                                     <th>Total</th>
                                                 </tr>
@@ -148,56 +147,93 @@
                                 <div class="form-group mb-0">
                                     <button type="submit" class="btn btn-success btn-sm btn-block" id="btnTerminarVenta">Terminar Venta</button>
                                 </div>
-                                <div class="form-group">
-                                    <label for="FacturaCredito">¿Factura a crédito?</label>
-                                    <input type="checkbox" asp-for="FacturaCredito" />
-                                </div>
+
+
+
+
+
+
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </form>
+
 </div>
 
 @section Scripts {
+        <script>
+            document.getElementById("btnTerminarVenta").addEventListener("click", function () {
+                const data = {
+                    clienteId: document.getElementById("txtClienteId").value,
+                    nombreCliente: document.getElementById("txtNombreCliente").value,
+                    documentoCliente: document.getElementById("txtDocumentoCliente").value,
+                    tipoDocumento: document.getElementById("cboTipoDocumentoVenta").value,
+                    subTotal: document.getElementById("txtSubTotal").value,
+                    igv: document.getElementById("txtIGV").value,
+                    total: document.getElementById("txtTotal").value,
+                    productos: Array.from(document.querySelectorAll("#tbProducto tbody tr")).map(row => ({
+                        nombreProducto: row.cells[1].innerText,
+                        cantidad: row.cells[2].innerText,
+                        precio: row.cells[3].innerText,
+                        total: row.cells[4].innerText
+                    }))
+                };
+
+                fetch('/Venta/GenerarFactura', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+
+                        // Abre el PDF en una nueva ventana y llama a la impresión
+                        const printWindow = window.open(url);
+                        printWindow.onload = () => {
+                            printWindow.print();
+                            printWindow.onafterprint = () => {
+                                printWindow.close();
+                            };
+                        };
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+
+
+</script>
     <script>
+
+
         document.getElementById('cboClientes').addEventListener('change', function () {
             var selectedOption = this.options[this.selectedIndex];
-            document.getElementById('txtDocumentoCliente').value = selectedOption.value;
-            document.getElementById('txtNombreCliente').value = selectedOption.getAttribute('data-nombre');
-            document.getElementById('txtClienteId').value = selectedOption.getAttribute('data-clienteid');
+
+            var documentoCliente = selectedOption.value;
+            var nombreCliente = selectedOption.getAttribute('data-nombre');
+            var clienteId = selectedOption.getAttribute('data-clienteid');
+
+            document.getElementById('txtDocumentoCliente').value = documentoCliente;
+            document.getElementById('txtNombreCliente').value = nombreCliente;
+            document.getElementById('txtClienteId').value = clienteId;
         });
 
-        document.getElementById('btnTerminarVenta').addEventListener('click', async function (event) {
-            event.preventDefault();
-
-            const chkCredito = document.querySelector('input[asp-for="FacturaCredito"]');
-            if (!chkCredito.checked) {
-                alert("Debes activar el checkbox 'Factura a crédito' para continuar.");
-                return;
-            }
-
-            const formData = new FormData(document.getElementById('formNuevaVenta'));
-
-            try {
-                const response = await fetch('/Venta/CrearVenta', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    alert("Venta creada con éxito.");
-                    window.location.reload();
+        document.getElementById('chkCredito').addEventListener('change', function () {
+            const camposNoRelevantes = [document.getElementById('txtSubTotal'), document.getElementById('txtIGV')];
+            camposNoRelevantes.forEach(campo => {
+                if (this.checked) {
+                    campo.closest('.input-group').style.display = 'none';
                 } else {
-                    alert("Error al crear la venta. Inténtalo de nuevo.");
+                    campo.closest('.input-group').style.display = '';
                 }
-            } catch (error) {
-                console.error("Error en la solicitud:", error);
-                alert("Ocurrió un error inesperado.");
-            }
+            });
         });
     </script>
 

@@ -1,44 +1,34 @@
 ﻿const MODELO_BASE = {
     idProducto: 0,
-    CodigoBarra: "",  // Ahora está en mayúsculas
-    marca: "",
+    CodigoBarra: "",
+    Marca: "",
     nombre: "",
     idCategoria: 0,
     stock: 0,
     urlImagen: "",
     precio: 0,
-    esActivo: 1
-};
+    esActivo: 1,
 
+}
 
 
 let tablaData;
 
 $(document).ready(function () {
+
     fetch("/Categoria/Lista")
-        .then(response => response.ok ? response.json() : Promise.reject(response))
+        .then(response => {
+            return response.ok ? response.json() : Promise.reject(response);
+        })
         .then(responseJson => {
             if (responseJson.data.length > 0) {
-                responseJson.data.forEach(item => {
+                responseJson.data.forEach((item) => {
                     $("#cboCategoria").append(
                         $("<option>").val(item.idCategoria).text(item.descripcion)
-                    );
-                });
+                    )
+                })
             }
-        });
-
-    // Llamada para obtener los proveedores
-    fetch("/Producto/ProveedoresLista")
-        .then(response => response.ok ? response.json() : Promise.reject(response))
-        .then(responseJson => {
-            if (responseJson.data.length > 0) {
-                responseJson.data.forEach(item => {
-                    $("#cboProveedor").append(
-                        $("<option>").val(item.idProveedor).text(item.nombre)
-                    );
-                });
-            }
-        });
+        })
 
 
 
@@ -99,32 +89,18 @@ $(document).ready(function () {
 
 
 function mostrarModal(modelo = MODELO_BASE) {
-    $("#txtId").val(modelo.idProducto);
-    $("#txtCodigoBarra").val(modelo.codigoBarra || modelo.CodigoBarra);  // Usar el código de barras existente
-    $("#txtMarca").val(modelo.marca);
-    $("#txtDescripcion").val(modelo.descripcion);
-    $("#cboCategoria").val(modelo.idCategoria == 0 ? $("#cboCategoria option:first").val() : modelo.idCategoria);
-    $("#txtStock").val(modelo.stock);
-    $("#txtPrecio").val(modelo.precio);
-    $("#cboEstado").val(modelo.esActivo);
+    $("#txtId").val(modelo.idProducto)
+    $("#txtCodigoBarra").val(modelo.CodigoBarra)
+    $("#txtMarca").val(modelo.marca)
+    $("#txtDescripcion").val(modelo.descripcion)
+    $("#cboCategoria").val(modelo.idCategoria == 0 ? $("#cboCategoria option:first").val() : modelo.idCategoria)
+    $("#txtStock").val(modelo.stock)
+    $("#txtPrecio").val(modelo.precio)
+    $("#cboEstado").val(modelo.esActivo)
     $("#txtImagen").val("");
-    $("#imgProducto").attr("src", modelo.urlImagen);
+    $("#imgProducto").attr("src", modelo.urlImagen)
 
-    // Bloquear el campo Código de Barras si es un producto existente
-    if (modelo.idProducto > 0) {
-        $("#txtCodigoBarra").prop("disabled", true); // Deshabilitar el campo si es un producto existente
-    } else {
-        // Generar un código de barras aleatorio para un producto nuevo
-        const codigoBarraAuto = generarCodigoBarra();
-        $("#txtCodigoBarra").val(codigoBarraAuto).prop("disabled", true);
-    }
-
-    $("#modalData").modal("show");
-}
-
-
-function generarCodigoBarra() {
-    return Math.random().toString(36).substring(2, 12).toUpperCase();  // Generar código en mayúsculas
+    $("#modalData").modal("show")
 }
 
 
@@ -136,30 +112,31 @@ $("#btnNuevo").click(function () {
 $("#btnGuardar").click(function () {
 
     const inputs = $("input.input-validar").serializeArray();
-    const inputs_sin_valor = inputs.filter((item) => item.value.trim() == "");
+    const inputs_sin_valor = inputs.filter((item) => item.value.trim() == "")
 
     if (inputs_sin_valor.length > 0) {
         const mensaje = `Debe completar el campo : "${inputs_sin_valor[0].name}"`;
-        toastr.warning("", mensaje);
-        $(`input[name="${inputs_sin_valor[0].name}"]`).focus();
+        toastr.warning("", mensaje)
+        $(`input[name="${inputs_sin_valor[0].name}"]`).focus()
         return;
     }
-
     const modelo = structuredClone(MODELO_BASE);
-    modelo["idProducto"] = parseInt($("#txtId").val());
-    modelo["CodigoBarra"] = $("#txtCodigoBarra").val();  // Manteniendo en mayúsculas
-    modelo["marca"] = $("#txtMarca").val();
-    modelo["descripcion"] = $("#txtDescripcion").val();
-    modelo["idCategoria"] = $("#cboCategoria").val();
-    modelo["stock"] = $("#txtStock").val();
-    modelo["precio"] = $("#txtPrecio").val();
-    modelo["esActivo"] = $("#cboEstado").val();
+    modelo["idProducto"] = parseInt($("#txtId").val())
+    modelo["codigoBarra"] = $("#txtCodigoBarra").val()
+    modelo["marca"] = $("#txtMarca").val()
+    modelo["descripcion"] = $("#txtDescripcion").val()
+    modelo["idCategoria"] = $("#cboCategoria").val()
+    modelo["stock"] = $("#txtStock").val()
+    modelo["precio"] = $("#txtPrecio").val()
+    modelo["esActivo"] = $("#cboEstado").val()
 
-    const inputFoto = document.getElementById("txtImagen");
+
+
+    const inputFoto = document.getElementById("txtImagen")
 
     const formData = new FormData();
-    formData.append("imagen", inputFoto.files[0]);
-    formData.append("modelo", JSON.stringify(modelo));
+    formData.append("imagen", inputFoto.files[0])
+    formData.append("modelo", JSON.stringify(modelo))
 
     $("#modalData").find("div.modal-content").LoadingOverlay("show");
 
@@ -171,16 +148,20 @@ $("#btnGuardar").click(function () {
             .then(response => {
                 $("#modalData").find("div.modal-content").LoadingOverlay("hide");
                 return response.ok ? response.json() : Promise.reject(response);
+
             })
             .then(responseJson => {
                 if (responseJson.estado) {
-                    tablaData.row.add(responseJson.objeto).draw(false);
-                    $("#modalData").modal("hide");
-                    swal("Listo!", "El producto fue creado", "success");
+
+                    tablaData.row.add(responseJson.objeto).draw(false)
+                    $("#modalData").modal("hide")
+                    swal("Listo!", "El producto fue creado", "success")
                 } else {
-                    swal("Lo sentimos", responseJson.mensaje, "error");
+                    swal("Los sentimos", responseJson.mensaje, "error")
                 }
-            });
+
+            })
+
     } else {
         fetch("/Producto/Editar", {
             method: "PUT",
@@ -189,33 +170,39 @@ $("#btnGuardar").click(function () {
             .then(response => {
                 $("#modalData").find("div.modal-content").LoadingOverlay("hide");
                 return response.ok ? response.json() : Promise.reject(response);
+
             })
             .then(responseJson => {
                 if (responseJson.estado) {
+
                     tablaData.row(filaSeleccionada).data(responseJson.objeto).draw(false);
                     filaSeleccionada = null;
-                    $("#modalData").modal("hide");
-                    swal("Listo!", "El producto fue modificado", "success");
+                    $("#modalData").modal("hide")
+                    swal("Listo!", "El producto fue modificado", "success")
                 } else {
-                    swal("Lo sentimos", responseJson.mensaje, "error");
+                    swal("Los sentimos", responseJson.mensaje, "error")
                 }
-            });
-    }
-});
 
+            })
+
+    }
+
+})
 
 let filaSeleccionada;
 $("#tbdata tbody").on("click", ".btn-editar", function () {
+
     if ($(this).closest("tr").hasClass("child")) {
         filaSeleccionada = $(this).closest("tr").prev();
     } else {
         filaSeleccionada = $(this).closest("tr");
     }
     const data = tablaData.row(filaSeleccionada).data();
-    console.log(data);
+    console.log(data)
 
-    mostrarModal(data);  // Mostrar el modal con el producto seleccionado
-});
+    mostrarModal(data);
+
+})
 
 
 $("#tbdata tbody").on("click", ".btn-eliminar", function () {
@@ -269,17 +256,3 @@ $("#tbdata tbody").on("click", ".btn-eliminar", function () {
         }
     )
 })
-$(document).ready(function () {
-    $.ajax({
-        url: '/Producto/ObtenerProveedores',  // Asegúrate que el endpoint coincida
-        type: 'GET',
-        success: function (data) {
-            var cboProveedor = $("#cboProveedor");
-            cboProveedor.empty();
-            cboProveedor.append('<option value="0">Seleccionar Proveedor</option>');
-            $.each(data, function (i, proveedor) {
-                cboProveedor.append('<option value="' + proveedor.idProveedor + '">' + proveedor.nombre + '</option>');
-            });
-        }
-    });
-});

@@ -91,7 +91,6 @@ namespace SistemaVenta.AplicacionWeb.Utilidades.Automapper
                     destino.Precio,
                     opt => opt.MapFrom(origen => decimal.Parse(origen.Precio, new CultureInfo("es-DO")))
                 );
-
             #endregion
 
 
