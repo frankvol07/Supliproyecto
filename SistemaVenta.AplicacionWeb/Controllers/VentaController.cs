@@ -300,6 +300,7 @@ namespace SistemaVenta.AplicacionWeb.Controllers
                 document.Add(new Paragraph($"Fecha: {DateTime.Now:dd/MM/yyyy}", normalFont));
                 document.Add(new Paragraph($"CLIENTE: {factura.documentoCliente ?? "Sin Identificar"}", normalFont));
                 document.Add(new Paragraph($"Nombre Cliente: {factura.nombreCliente ?? "Cliente Genérico"}", normalFont));
+                document.Add(new Paragraph($"Método de Pago: {factura.MetodoPago}"));
                 document.Add(new Paragraph("\n"));
 
                 PdfPTable table = new PdfPTable(4);

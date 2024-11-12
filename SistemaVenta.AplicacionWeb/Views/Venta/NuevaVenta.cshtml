@@ -147,6 +147,17 @@
                                 </div>
                                 <input type="text" class="form-control text-right" aria-label="Small" name="MontoTotal" aria-describedby="inputGroupTotal" id="txtTotal" readonly>
                             </div>
+                            <label for="cboMetodoPago">Método de Pago:</label>
+                            <select id="cboMetodoPago" name="MetodoPago" class="form-control">
+                                <option value="Contado">Contado</option>
+                                <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+                                <option value="Tarjeta de Débito">Tarjeta de Débito</option>
+                                <option value="Cheque">Cheque</option>
+                                <option value="Transferencia">Transferencia</option>
+                                <option value="Efectivo">Efectivo</option>
+                            </select>
+
+
                             <div class="input-group input-group-sm mb-3">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text" id="inputGroupMontoPagar">Monto a Pagar</span>
@@ -208,13 +219,26 @@
                 document.getElementById('txtMontoRestante').value = restante.toFixed(2);
             });
         </script>
+        <script>
+            document.getElementById("cboMetodoPago").addEventListener("change", function () {
+                const metodoPago = this.value;
+                const totalInput = document.getElementById("txtTotal");
+                const subTotal = parseFloat(document.getElementById("txtSubTotal").value) || 0;
+                const igv = parseFloat(document.getElementById("txtIGV").value) || 0;
+                let total = subTotal + igv;
 
+                if (metodoPago === "Tarjeta de Crédito") {
+                    total += total * 0.02; // Aplica un 2% adicional
+                }
+
+                totalInput.value = total.toFixed(2);
+            });
+        </script>
         <script>
             document.getElementById('chkIGV').addEventListener('change', function () {
                 const subTotal = parseFloat(document.getElementById('txtSubTotal').value || 0);
                 const igvField = document.getElementById('txtIGV');
                 const totalField = document.getElementById('txtTotal');
-
                 if (this.checked) {
                     const igv = subTotal * 0.18;
                     igvField.value = igv.toFixed(2);
@@ -236,9 +260,10 @@
                     tipoDocumento: document.getElementById("cboTipoDocumentoVenta").value,
                     subTotal: document.getElementById("txtSubTotal").value,
                     igv: document.getElementById("txtIGV").value,
-                    total: document.getElementById("txtTotal").value,
+                    total: parseFloat(document.getElementById("txtTotal").value) || 0,
                     montoPagar: parseFloat(document.getElementById("txtMontoPagar").value) || 0,
                     montoRestante: document.getElementById("txtMontoRestante").value,
+                    metodoPago: document.getElementById("cboMetodoPago").value,
                     productos: Array.from(document.querySelectorAll("#tbProducto tbody tr")).map(row => ({
                         nombreProducto: row.cells[1].innerText,
                         cantidad: row.cells[2].innerText,
