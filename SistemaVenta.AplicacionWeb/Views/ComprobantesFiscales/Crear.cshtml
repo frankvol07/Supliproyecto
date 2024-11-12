@@ -1,0 +1,77 @@
+﻿@model SistemaVenta.AplicacionWeb.Models.ViewModels.ComprobanteFiscalViewModel
+
+@{
+    ViewData["Title"] = "Crear Comprobante Fiscal";
+}
+
+<!-- Botón para abrir el modal -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#comprobanteModal">
+    Crear Comprobante Fiscal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="comprobanteModal" tabindex="-1" role="dialog" aria-labelledby="comprobanteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="comprobanteModalLabel">@ViewData["Title"]</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Crear" method="post">
+                    <div class="form-group">
+                        <label asp-for="Tipo"></label>
+                        <select asp-for="Tipo" class="form-control">
+                            <option value="">Seleccione un tipo</option>
+                            <option value="B01">Factura de Crédito Fiscal (B01)</option>
+                            <option value="B02">Factura de Consumo (B02)</option>
+                            <option value="B13">Comprobante de gasto menor (B13)</option>
+                        </select>
+                        <span asp-validation-for="Tipo" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="NCF_Desde"></label>
+                        <input asp-for="NCF_Desde" class="form-control" maxlength="8" />
+                        <span asp-validation-for="NCF_Desde" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="NCF_Hasta"></label>
+                        <input asp-for="NCF_Hasta" class="form-control" maxlength="8" />
+                        <span asp-validation-for="NCF_Hasta" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="NCF_Actual"></label>
+                        <input asp-for="NCF_Actual" class="form-control" maxlength="8" value="0" />
+                        <span asp-validation-for="NCF_Actual" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="NCF_Restan"></label>
+                        <input asp-for="NCF_Restan" class="form-control" maxlength="8" value="0" />
+                        <span asp-validation-for="NCF_Restan" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Fecha_Vto"></label>
+                        <input asp-for="Fecha_Vto" type="date" class="form-control" />
+                        <span asp-validation-for="Fecha_Vto" class="text-danger"></span>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Guardar</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}

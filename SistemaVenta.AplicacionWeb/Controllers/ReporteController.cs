@@ -4,6 +4,7 @@ using AutoMapper;
 using SistemaVenta.AplicacionWeb.Models.ViewModels;
 using SistemaVenta.BLL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using SistemaVenta.DAL.DBContext;
 
 namespace SistemaVenta.AplicacionWeb.Controllers
 {
@@ -13,12 +14,14 @@ namespace SistemaVenta.AplicacionWeb.Controllers
 
         private readonly IMapper _mapper;
         private readonly IVentaService _ventaServicio;
+        private readonly DBVENTAContext _context;
 
-        public ReporteController(IMapper mapper, IVentaService ventaServicio)
+
+        public ReporteController(IMapper mapper, IVentaService ventaServicio, DBVENTAContext context)
         {
             _mapper = mapper;
             _ventaServicio = ventaServicio;
-
+            _context = context;
         }
         public IActionResult Index()
         {
@@ -32,5 +35,7 @@ namespace SistemaVenta.AplicacionWeb.Controllers
             return StatusCode(StatusCodes.Status200OK, new { data = vmLista });
 
         }
+
+
     }
 }

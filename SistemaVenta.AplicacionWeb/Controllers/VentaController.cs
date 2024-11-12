@@ -40,7 +40,6 @@ namespace SistemaVenta.AplicacionWeb.Controllers
 
         public async Task<IActionResult> NuevaVenta()
         {
-
             var fechaActual = DateTime.Now.Date;
             var cajaAbierta = await _context.Cajas
                 .FirstOrDefaultAsync(c => c.FechaApertura.Date == fechaActual && c.Estado == true);
@@ -49,6 +48,24 @@ namespace SistemaVenta.AplicacionWeb.Controllers
             {
                 TempData["MensajeError"] = "La caja está cerrada. No se pueden realizar ventas.";
                 return RedirectToAction("MostrarMensajeCajaCerrada");
+            }
+
+            // Verificar si ConfigRNC está activo
+            var configRNC = await _context.ConfigRNCs.FirstOrDefaultAsync(c => c.Nombre == "ActivarNCF");
+
+            if (configRNC != null && configRNC.Valor)
+            {
+                // Obtener tipos de comprobantes fiscales disponibles
+                var comprobantes = await _context.ComprobantesFiscales
+                    .Where(c => c.Fecha_Vto >= fechaActual && c.NCF_Restan > 0)
+                    .Select(c => new { c.Id, c.Tipo })
+                    .ToListAsync();
+
+                ViewBag.Comprobantes = comprobantes;
+            }
+            else
+            {
+                ViewBag.Comprobantes = null;
             }
 
             // Obtener la lista de clientes
@@ -200,58 +217,154 @@ namespace SistemaVenta.AplicacionWeb.Controllers
             var archivoPDF = _converter.Convert(pdf);
             return File(archivoPDF, "application/pdf");
         }
+
+
         [HttpPost]
-        public IActionResult GenerarFactura([FromBody] FacturaViewModels factura)
+        [Authorize]
+        public IActionResult GenerarFactura([FromBody] FacturaViewModels factura, string tipoComprobante)
         {
+            // Verificar si la funcionalidad de NCF está activada
+            var configRNC = _context.ConfigRNCs.FirstOrDefault();
+            bool isRNCActive = configRNC != null && configRNC.Valor;
+
+            string ncfActual = null;
+            string tipoNCF = null;
+            DateTime? fechaVencimiento = null;
+
+            if (isRNCActive)
+            {
+                var comprobante = _context.ComprobantesFiscales
+                    .Where(c => c.Tipo == tipoComprobante && c.NCF_Restan > 0 && c.Fecha_Vto > DateTime.Now)
+                    .OrderBy(c => c.NCF_Actual)
+                    .FirstOrDefault();
+
+                if (comprobante == null)
+                {
+                    return BadRequest("No hay comprobantes fiscales disponibles para el tipo seleccionado o han vencido.");
+                }
+
+                ncfActual = comprobante.NCF_Actual;
+                tipoNCF = comprobante.Tipo;
+                fechaVencimiento = comprobante.Fecha_Vto;
+                var nuevoNCF = IncrementarNCF(ncfActual);
+
+                if (string.Compare(nuevoNCF, comprobante.NCF_Hasta) > 0)
+                {
+                    return BadRequest("Se ha alcanzado el límite de la serie de NCF.");
+                }
+
+                comprobante.NCF_Actual = nuevoNCF;
+                comprobante.NCF_Restan -= 1;
+                _context.ComprobantesFiscales.Update(comprobante);
+                _context.SaveChanges();
+            }
+
+            var negocio = _context.Negocios.FirstOrDefault();
+            if (negocio == null)
+            {
+                return BadRequest("No se encontró información del negocio.");
+            }
+
             using (var memoryStream = new MemoryStream())
             {
-                // Tamaño de 80mm de ancho (227 puntos) y longitud ajustable (por ejemplo, 350 puntos)
-                var pageSize = new Rectangle(227, 400);
+                var pageSize = new Rectangle(227, 700);
                 var document = new Document(pageSize, 10, 10, 10, 10);
                 var writer = PdfWriter.GetInstance(document, memoryStream);
                 document.Open();
 
-                // Encabezado de la factura
-                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14);
-                var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 10);
+                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10);
+                var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 8);
 
-                document.Add(new Paragraph("========Factura========", titleFont) { Alignment = Element.ALIGN_CENTER });
-                document.Add(new Paragraph("\n"));
-
-                // Detalles del cliente
-                document.Add(new Paragraph($"Cliente: {factura.nombreCliente}", normalFont));
-                document.Add(new Paragraph($"Documento: {factura.documentoCliente}", normalFont));
-                document.Add(new Paragraph($"ID Cliente: {factura.clienteId}", normalFont));
-                document.Add(new Paragraph("\n"));
-
-                // Lista de productos
-                document.Add(new Paragraph("Productos:", normalFont));
-                foreach (var producto in factura.productos)
+                if (!string.IsNullOrEmpty(negocio.UrlLogo))
                 {
-                    document.Add(new Paragraph($"- Producto: {producto.nombreProducto}", normalFont));
-                    document.Add(new Paragraph($"  Cantidad: {producto.cantidad}", normalFont));
-                    document.Add(new Paragraph($"  Precio: {producto.precio}", normalFont));
-                    document.Add(new Paragraph($"  Total: {producto.total}\n", normalFont));
+                    var logoImage = Image.GetInstance(negocio.UrlLogo);
+                    logoImage.ScaleToFit(50f, 50f);
+                    logoImage.Alignment = Image.ALIGN_CENTER;
+                    document.Add(logoImage);
                 }
 
-                document.Add(new Paragraph("==================================", normalFont));
-                document.Add(new Paragraph($"Sub Total: {factura.subTotal}", normalFont));
-                document.Add(new Paragraph($"IGV: {factura.igv}", normalFont));
-                document.Add(new Paragraph($"Total: {factura.total}", normalFont));
+                document.Add(new Paragraph(negocio.Nombre ?? "Nombre del Negocio", titleFont) { Alignment = Element.ALIGN_CENTER });
+                document.Add(new Paragraph($"RNC: {negocio.NumeroDocumento}", normalFont) { Alignment = Element.ALIGN_CENTER });
+                document.Add(new Paragraph($"TEL: {negocio.Telefono}", normalFont) { Alignment = Element.ALIGN_CENTER });
+                document.Add(new Paragraph($"{negocio.Direccion}", normalFont) { Alignment = Element.ALIGN_CENTER });
                 document.Add(new Paragraph("\n"));
 
-                // Mensaje de agradecimiento
-                document.Add(new Paragraph("===Gracias por su compra===", titleFont) { Alignment = Element.ALIGN_CENTER });
+                document.Add(new Paragraph("Factura:", normalFont));
+
+                if (isRNCActive && ncfActual != null)
+                {
+                    document.Add(new Paragraph($"NCF: {tipoNCF}{ncfActual}", normalFont));
+                    document.Add(new Paragraph($"Fecha de Vencimiento: {fechaVencimiento:dd/MM/yyyy}", normalFont));
+                }
+
+                document.Add(new Paragraph($"Fecha: {DateTime.Now:dd/MM/yyyy}", normalFont));
+                document.Add(new Paragraph($"CLIENTE: {factura.documentoCliente ?? "Sin Identificar"}", normalFont));
+                document.Add(new Paragraph($"Nombre Cliente: {factura.nombreCliente ?? "Cliente Genérico"}", normalFont));
+                document.Add(new Paragraph("\n"));
+
+                PdfPTable table = new PdfPTable(4);
+                table.WidthPercentage = 100;
+                table.SetWidths(new float[] { 1, 3, 1, 1 });
+
+                table.AddCell(new PdfPCell(new Phrase("Cant", normalFont)) { Border = 0 });
+                table.AddCell(new PdfPCell(new Phrase("Descripcion", normalFont)) { Border = 0 });
+                table.AddCell(new PdfPCell(new Phrase("Precio", normalFont)) { Border = 0 });
+                table.AddCell(new PdfPCell(new Phrase("Valor", normalFont)) { Border = 0 });
+
+                foreach (var producto in factura.productos)
+                {
+                    table.AddCell(new PdfPCell(new Phrase(producto.cantidad.ToString(), normalFont)) { Border = 0 });
+                    table.AddCell(new PdfPCell(new Phrase(producto.nombreProducto, normalFont)) { Border = 0 });
+                    table.AddCell(new PdfPCell(new Phrase($"{producto.precio:C}", normalFont)) { Border = 0 });
+                    table.AddCell(new PdfPCell(new Phrase($"{producto.total:C}", normalFont)) { Border = 0 });
+                }
+
+                document.Add(table);
+                document.Add(new Paragraph("\n"));
+                document.Add(new Paragraph($"SubTotal: {factura.subTotal:C}", normalFont));
+                document.Add(new Paragraph($"ITBIS: {factura.igv:C}", normalFont));
+                document.Add(new Paragraph($"Total: {factura.total:C}", normalFont));
+                document.Add(new Paragraph($"Monto Restante: {factura.montoRestante:C}", normalFont));
+                document.Add(new Paragraph("\n"));
+
+                document.Add(new Paragraph("GRACIAS POR PREFERIRNOS!!!", normalFont) { Alignment = Element.ALIGN_CENTER });
 
                 document.Close();
                 writer.Close();
 
-                // Retornar el PDF
                 Response.Headers["Content-Disposition"] = "inline; filename=Factura.pdf";
                 Response.ContentType = "application/pdf";
                 return File(memoryStream.ToArray(), "application/pdf");
             }
         }
 
+
+
+
+
+
+
+        private string IncrementarNCF(string ncfActual)
+        {
+            // Convertimos el NCF actual en un número entero
+            var numeroActual = int.Parse(ncfActual);
+
+            // Incrementamos el número
+            var numeroIncrementado = numeroActual + 1;
+
+            // Convertimos el número incrementado de nuevo a string y aseguramos que tenga 8 caracteres
+            var nuevoNCF = numeroIncrementado.ToString().PadLeft(8, '0');
+
+            return nuevoNCF;
+        }
     }
-}
+
+    }
+
+
+
+
+
+
+
+

@@ -39,6 +39,11 @@ namespace SistemaVenta.DAL.DBContext
         public virtual DbSet<DetallesFactura> DetallesFacturas { get; set; }
         public virtual DbSet<FacturaProveedor> FacturaProveedores { get; set; }
         public virtual DbSet<Pago> Pagos { get; set; }
+        public virtual DbSet<ComprobanteFiscal> ComprobantesFiscales { get; set; }
+        public virtual DbSet<ConfigRNC> ConfigRNCs { get; set; }
+        public virtual DbSet<VentaRNC> VentaRNC { get; set; }
+        public virtual DbSet<DetalleTransaccion607> DetalleTransaccion607 { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
           

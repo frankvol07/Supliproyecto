@@ -1,0 +1,22 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<h2>Exportar Ventas a Excel</h2>
+
+<form method="post" action="@Url.Action("ExportarExcel", "VentaRNC")">
+    <div class="form-group">
+        <label for="fechaInicio">Fecha de Inicio:</label>
+        <input type="date" id="fechaInicio" name="fechaInicio" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label for="fechaFin">Fecha de Fin:</label>
+        <input type="date" id="fechaFin" name="fechaFin" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Exportar Formato 606</button>
+</form>
+
+

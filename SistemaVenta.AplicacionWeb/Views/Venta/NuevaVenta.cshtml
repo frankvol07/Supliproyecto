@@ -23,155 +23,222 @@
 
 <div class="container-fluid">
 
-        <div class="row">
-            <div class="col-sm-8">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="card shadow mb-4">
-                            <div class="card-header py-3 bg-second-primary">
-                                <h6 class="m-0 font-weight-bold text-white">Cliente</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="form-row">
-                                    <div class="form-group col-sm-6">
-                                        <label for="cboClientes">Seleccione un Cliente</label>
-                                        <select class="form-control form-control-sm" id="cboClientes">
-                                            <option value="">Seleccione un cliente</option>
-                                            @if (ViewBag.Clientes != null)
+    <div class="row">
+        <div class="col-sm-8">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 bg-second-primary">
+                            <h6 class="m-0 font-weight-bold text-white">Cliente</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-group col-sm-6">
+                                    <label for="cboClientes">Seleccione un Cliente</label>
+                                    <select class="form-control form-control-sm" id="cboClientes">
+                                        <option value="">Seleccione un cliente</option>
+                                        @if (ViewBag.Clientes != null)
+                                        {
+                                            foreach (var cliente in ViewBag.Clientes)
                                             {
-                                                foreach (var cliente in ViewBag.Clientes)
-                                                {
-                                                    <option value="@cliente.NumeroIdentificacion" data-nombre="@cliente.Nombre" data-clienteid="@cliente.ClienteId">
-                                                        @($"{cliente.Nombre} {cliente.Apellidos}")
-                                                    </option>
-                                                }
+                                                <option value="@cliente.NumeroIdentificacion" data-nombre="@cliente.Nombre" data-clienteid="@cliente.ClienteId">
+                                                    @($"{cliente.Nombre} {cliente.Apellidos}")
+                                                </option>
                                             }
-                                        </select>
-                                    </div>
-                                    <div class="form-group col-sm-6">
-                                        <label for="txtDocumentoCliente">Documento del Cliente</label>
-                                        <input type="text" class="form-control form-control-sm" id="txtDocumentoCliente" placeholder="Número de documento" readonly />
-                                    </div>
-                                    <div class="form-group col-sm-6">
-                                        <label for="txtNombreCliente">Nombre del Cliente</label>
-                                        <input type="text" class="form-control form-control-sm" id="txtNombreCliente" placeholder="Nombre completo" readonly />
-                                    </div>
-                                    <div class="form-group col-sm-6">
-                                        <label for="txtClienteId">ID del Cliente</label>
-                                        <input type="text" class="form-control form-control-sm" id="txtClienteId" name="ClienteID" placeholder="ID del cliente" readonly />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="card shadow mb-4">
-                            <div class="card-header py-3 bg-second-primary">
-                                <h6 class="m-0 font-weight-bold text-white">Productos</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="form-row">
-                                    <div class="form-group col-sm-12">
-                                        <select class="form-control form-control-sm" id="cboBuscarProducto">
-                                            <option value=""></option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <table class="table table-striped table-sm" id="tbProducto">
-                                            <thead>
-                                                <tr>
-                                                    <th></th>
-                                                    <th>Producto</th>
-                                                    <th>Cantidad</th> <!-- Asegúrate de que este encabezado sea correcto -->
-                                                    <th>Precio</th>
-                                                    <th>Total</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                            </tbody>
-                                        </table>
-
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="card shadow mb-4">
-                            <div class="card-header py-3 bg-second-primary">
-                                <h6 class="m-0 font-weight-bold text-white">Detalle</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="input-group input-group-sm mb-3">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text" for="cboTipoDocumentoVenta">Tipo</label>
-                                    </div>
-                                    <select class="custom-select" id="cboTipoDocumentoVenta">
+                                        }
                                     </select>
                                 </div>
-                                <div class="input-group input-group-sm mb-3">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="inputGroupSubTotal">Sub Total</span>
-                                    </div>
-                                    <input type="text" class="form-control text-right" aria-label="Small" aria-describedby="inputGroupSubTotal" id="txtSubTotal" disabled>
+                                <div class="form-group col-sm-6">
+                                    <label for="txtDocumentoCliente">Documento del Cliente</label>
+                                    <input type="text" class="form-control form-control-sm" id="txtDocumentoCliente" placeholder="Número de documento" readonly />
                                 </div>
-                                <div class="input-group input-group-sm mb-3">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="inputGroupIGV">IGV(18%)</span>
-                                    </div>
-                                    <input type="text" class="form-control text-right" aria-label="Small" aria-describedby="inputGroupIGV" id="txtIGV" disabled>
+                                <div class="form-group col-sm-6">
+                                    <label for="txtNombreCliente">Nombre del Cliente</label>
+                                    <input type="text" class="form-control form-control-sm" id="txtNombreCliente" placeholder="Nombre completo" readonly />
                                 </div>
-                                <div class="input-group input-group-sm mb-3">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="inputGroupTotal">Total</span>
-                                    </div>
-                                    <input type="text" class="form-control text-right" aria-label="Small" name="MontoTotal" aria-describedby="inputGroupTotal" id="txtTotal" readonly>
+                                <div class="form-group col-sm-6">
+                                    <label for="txtClienteId">ID del Cliente</label>
+                                    <input type="text" class="form-control form-control-sm" id="txtClienteId" name="ClienteID" placeholder="ID del cliente" readonly />
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="card shadow">
-                            <div class="card-body">
-                                <div class="form-group mb-0">
-                                    <button type="submit" class="btn btn-success btn-sm btn-block" id="btnTerminarVenta">Terminar Venta</button>
-                                </div>
-
-
-
-
-
-
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 bg-second-primary">
+                            <h6 class="m-0 font-weight-bold text-white">Productos</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-group col-sm-12">
+                                    <select class="form-control form-control-sm" id="cboBuscarProducto">
+                                        <option value=""></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <table class="table table-striped table-sm" id="tbProducto">
+                                        <thead>
+                                            <tr>
+                                                <th></th>
+                                                <th>Producto</th>
+                                                <th>Cantidad</th> <!-- Asegúrate de que este encabezado sea correcto -->
+                                                <th>Precio</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
 
-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 bg-second-primary">
+                            <h6 class="m-0 font-weight-bold text-white">Detalle</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="input-group input-group-sm mb-3">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text" for="cboTipoComprobante">Tipo Comprobante</label>
+                                </div>
+                                <select class="custom-select" id="cboTipoComprobante">
+                                    <option value="">Seleccione un tipo</option>
+                                    <option value="B01">Factura de Crédito Fiscal (B01)</option>
+                                    <option value="B02">Factura de Consumo (B02)</option>
+                                    <option value="B13">Comprobante de gasto menor(B02)</option>
+                                </select>
+                            </div>
 
-@section Scripts {
+                            <div class="input-group input-group-sm mb-3">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text" for="cboTipoDocumentoVenta">Tipo</label>
+                                </div>
+                                <select class="custom-select" id="cboTipoDocumentoVenta">
+                                </select>
+                            </div>
+                            <div class="input-group input-group-sm mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroupSubTotal">Sub Total</span>
+                                </div>
+                                <input type="text" class="form-control text-right" aria-label="Small" aria-describedby="inputGroupSubTotal" id="txtSubTotal" disabled>
+                            </div>
+                            <div class="input-group input-group-sm mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroupIGV">IGV(18%)</span>
+                                </div>
+                                <input type="text" class="form-control text-right" aria-label="Small" aria-describedby="inputGroupIGV" id="txtIGV" disabled>
+                            </div>
+                            <div class="input-group input-group-sm mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroupTotal">Total</span>
+                                </div>
+                                <input type="text" class="form-control text-right" aria-label="Small" name="MontoTotal" aria-describedby="inputGroupTotal" id="txtTotal" readonly>
+                            </div>
+                            <div class="input-group input-group-sm mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroupMontoPagar">Monto a Pagar</span>
+                                </div>
+                                <input type="number" class="form-control text-right" aria-label="Small" aria-describedby="inputGroupMontoPagar" id="txtMontoPagar" value="0">
+                            </div>
+
+                            <!-- Campo para Monto Restante -->
+                            <div class="input-group input-group-sm mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroupMontoRestante">Monto Restante</span>
+                                </div>
+                                <input type="text" class="form-control text-right" aria-label="Small" aria-describedby="inputGroupMontoRestante" id="txtMontoRestante" readonly>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="chkIGV">
+                                <label class="form-check-label" for="chkIGV">
+                                    Aplicar IGV (18%)
+                                </label>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <div class="form-group mb-0">
+                                <button type="submit" class="btn btn-success btn-sm btn-block" id="btnTerminarVenta">Terminar Venta</button>
+                            </div>
+
+
+
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    @section Scripts {
+        <script>
+            document.getElementById('txtMontoPagar').addEventListener('input', function () {
+                const total = parseFloat(document.getElementById('txtTotal').value) || 0;
+                const montoPagar = parseFloat(this.value) || 0;
+
+                // Invertir el cálculo del restante
+                const restante = montoPagar - total;
+
+                // Actualizar el campo del monto restante
+                document.getElementById('txtMontoRestante').value = restante.toFixed(2);
+            });
+        </script>
+
+        <script>
+            document.getElementById('chkIGV').addEventListener('change', function () {
+                const subTotal = parseFloat(document.getElementById('txtSubTotal').value || 0);
+                const igvField = document.getElementById('txtIGV');
+                const totalField = document.getElementById('txtTotal');
+
+                if (this.checked) {
+                    const igv = subTotal * 0.18;
+                    igvField.value = igv.toFixed(2);
+                    totalField.value = (subTotal + igv).toFixed(2);
+                } else {
+                    igvField.value = '0.00';
+                    totalField.value = subTotal.toFixed(2);
+                }
+            });
+
+        </script>
         <script>
             document.getElementById("btnTerminarVenta").addEventListener("click", function () {
                 const data = {
                     clienteId: document.getElementById("txtClienteId").value,
                     nombreCliente: document.getElementById("txtNombreCliente").value,
                     documentoCliente: document.getElementById("txtDocumentoCliente").value,
+                    tipoComprobante: document.getElementById("cboTipoComprobante").value, // Tipo de comprobante
                     tipoDocumento: document.getElementById("cboTipoDocumentoVenta").value,
                     subTotal: document.getElementById("txtSubTotal").value,
                     igv: document.getElementById("txtIGV").value,
                     total: document.getElementById("txtTotal").value,
+                    montoPagar: parseFloat(document.getElementById("txtMontoPagar").value) || 0,
+                    montoRestante: document.getElementById("txtMontoRestante").value,
                     productos: Array.from(document.querySelectorAll("#tbProducto tbody tr")).map(row => ({
                         nombreProducto: row.cells[1].innerText,
                         cantidad: row.cells[2].innerText,
@@ -180,7 +247,7 @@
                     }))
                 };
 
-                fetch('/Venta/GenerarFactura', {
+                fetch(`/Venta/GenerarFactura?tipoComprobante=${document.getElementById("cboTipoComprobante").value}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -195,8 +262,6 @@
                     })
                     .then(blob => {
                         const url = window.URL.createObjectURL(blob);
-
-                        // Abre el PDF en una nueva ventana y llama a la impresión
                         const printWindow = window.open(url);
                         printWindow.onload = () => {
                             printWindow.print();
@@ -209,35 +274,36 @@
             });
 
 
-</script>
-    <script>
+
+        </script>
+        <script>
 
 
-        document.getElementById('cboClientes').addEventListener('change', function () {
-            var selectedOption = this.options[this.selectedIndex];
+            document.getElementById('cboClientes').addEventListener('change', function () {
+                var selectedOption = this.options[this.selectedIndex];
 
-            var documentoCliente = selectedOption.value;
-            var nombreCliente = selectedOption.getAttribute('data-nombre');
-            var clienteId = selectedOption.getAttribute('data-clienteid');
+                var documentoCliente = selectedOption.value;
+                var nombreCliente = selectedOption.getAttribute('data-nombre');
+                var clienteId = selectedOption.getAttribute('data-clienteid');
 
-            document.getElementById('txtDocumentoCliente').value = documentoCliente;
-            document.getElementById('txtNombreCliente').value = nombreCliente;
-            document.getElementById('txtClienteId').value = clienteId;
-        });
-
-        document.getElementById('chkCredito').addEventListener('change', function () {
-            const camposNoRelevantes = [document.getElementById('txtSubTotal'), document.getElementById('txtIGV')];
-            camposNoRelevantes.forEach(campo => {
-                if (this.checked) {
-                    campo.closest('.input-group').style.display = 'none';
-                } else {
-                    campo.closest('.input-group').style.display = '';
-                }
+                document.getElementById('txtDocumentoCliente').value = documentoCliente;
+                document.getElementById('txtNombreCliente').value = nombreCliente;
+                document.getElementById('txtClienteId').value = clienteId;
             });
-        });
-    </script>
 
-    <script src="~/vendor/select2/select2.min.js"></script>
-    <script src="~/vendor/select2/es.min.js"></script>
-    <script src="~/js/vistas/Nueva_Venta.js"></script>
-}
+            document.getElementById('chkCredito').addEventListener('change', function () {
+                const camposNoRelevantes = [document.getElementById('txtSubTotal'), document.getElementById('txtIGV')];
+                camposNoRelevantes.forEach(campo => {
+                    if (this.checked) {
+                        campo.closest('.input-group').style.display = 'none';
+                    } else {
+                        campo.closest('.input-group').style.display = '';
+                    }
+                });
+            });
+        </script>
+
+        <script src="~/vendor/select2/select2.min.js"></script>
+        <script src="~/vendor/select2/es.min.js"></script>
+        <script src="~/js/vistas/Nueva_Venta.js"></script>
+    }

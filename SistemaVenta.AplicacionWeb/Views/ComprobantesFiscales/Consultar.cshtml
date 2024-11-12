@@ -1,0 +1,58 @@
+﻿@using SistemaVenta.Entity
+@model IEnumerable<SistemaVenta.Entity.ComprobanteFiscal>
+
+@{
+    ViewData["Title"] = "Consultar Comprobantes Fiscales";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Tipo</th>
+            <th>NCF Desde</th>
+            <th>NCF Hasta</th>
+            <th>NCF Actual</th>
+            <th>NCF Restan</th>
+            <th>Fecha de Vencimiento</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Tipo</td>
+                <td>@item.NCF_Desde</td>
+                <td>@item.NCF_Hasta</td>
+                <td>@item.NCF_Actual</td>
+                <td>@item.NCF_Restan</td>
+                <td>@item.Fecha_Vto.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <form asp-action="Eliminar" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@item.Id" />
+                        <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a href="@Url.Action("Crear")" class="btn btn-primary">Agregar Nuevo Comprobante</a>
+
+<div class="mt-3">
+    @if (ViewBag.ConfigRNCValor == true) // Verifica si la opción está activa
+    {
+        <form asp-action="DesactivarRNC" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-warning">Desactivar Venta con RNC</button>
+        </form>
+    }
+    else
+    {
+        <form asp-action="ActivarRNC" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-success">Activar Venta con RNC</button>
+        </form>
+    }
+</div>
