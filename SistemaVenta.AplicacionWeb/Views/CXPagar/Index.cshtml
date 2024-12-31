@@ -1,227 +1,141 @@
-﻿@model SistemaVenta.AplicacionWeb.Models.ViewModels.FacturaProveedorViewModel
+﻿@{
+    ViewData["Title"] = "Compras con Método de Pago Crédito";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
 
-<h2>Registro de Factura</h2>
-<form asp-action="Index" method="post">
-    <div>
-        <label for="ProveedorID">Proveedor:</label>
-        <select asp-for="ProveedorID" asp-items="@(new SelectList(ViewBag.Proveedores, "IdProveedor", "Nombre"))"></select>
-        <span asp-validation-for="ProveedorID" class="text-danger"></span>
-    </div>
+<h1>Compras con Método de Pago Crédito</h1>
 
-    <div>
-        <label asp-for="FechaEmision">Fecha de Emisión</label>
-        <input asp-for="FechaEmision" type="text" readonly value="@DateTime.Now.ToString("yyyy-MM-dd")" />
-        <span asp-validation-for="FechaEmision" class="text-danger"></span>
-    </div>
-
-    <div>
-        <label asp-for="FechaVencimiento"></label>
-        <input asp-for="FechaVencimiento" type="date" />
-        <span asp-validation-for="FechaVencimiento" class="text-danger"></span>
-    </div>
-
-    <div>
-        <label asp-for="MontoTotal"></label>
-        <input asp-for="MontoTotal" type="number" step="0.01" />
-        <span asp-validation-for="MontoTotal" class="text-danger"></span>
-    </div>
-
-    <div>
-        <label asp-for="Detalle"></label>
-        <input asp-for="Detalle" />
-        <span asp-validation-for="Detalle" class="text-danger"></span>
-    </div>
-
-    <div>
-        <label asp-for="Estado"></label>
-        <input asp-for="Estado" />
-        <span asp-validation-for="Estado" class="text-danger"></span>
-    </div>
-
-    <button class="Guardar" type="submit">Guardar</button>
-</form>
-
-
-<h2>Lista de Facturas</h2>
-<table class="table">
+<!-- Tabla de compras -->
+<table id="tabla-compras" class="table table-striped">
     <thead>
         <tr>
-            <th>ID</th>
             <th>Proveedor</th>
-            <th>Fecha Emisión</th>
-            <th>Fecha de Vencimiento</th>
+            <th>Producto</th>
+            <th>Costo</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
             <th>Monto Total</th>
-            <th>Detalle</th>
-            <th>Estado</th>
+            <th>Monto Restante</th>
             <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var factura in Model.Facturas)
-        {
-            <tr>
-                <td>@factura.FacturaProveedorID</td>
-                <td>
-                    @if (ViewBag.ProveedoresDict != null && ViewBag.ProveedoresDict.ContainsKey(factura.ProveedorID))
-                    {
-                        @(ViewBag.ProveedoresDict[factura.ProveedorID])
-                    }
-                    else
-                    {
-                        <span>No Disponible</span>
-                    }
-                </td>
-                <td>@factura.FechaEmision.ToShortDateString()</td>
-                <td>@factura.FechaVencimiento?.ToShortDateString()</td>
-                <td>@factura.MontoTotal</td>
-                <td>@factura.Detalle</td>
-                <td>@factura.Estado</td>
-                <td>
-                    <form asp-action="MarcarComoPagado" asp-route-id="@factura.FacturaProveedorID" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-success" @(factura.Estado == "Pagado" ? "disabled" : "")>Pagado</button>
-                    </form>
-
-                    <form asp-action="Eliminar" asp-route-id="@factura.FacturaProveedorID" method="post" style="display:inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este registro?');">
-                        <button type="submit" class="btn btn-danger">Eliminar</button>
-                    </form>
-                </td>
-            </tr>
-        }
+        <!-- Filas generadas dinámicamente por JavaScript -->
     </tbody>
 </table>
 
-<style>
-    .Guardar {
-    background-color: dodgerblue;
-    }
+<!-- Modal para realizar abono -->
+<div class="modal fade" id="modalAbono" tabindex="-1" aria-labelledby="modalAbonoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAbonoLabel">Realizar Abono</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formAbono">
+                    <div class="mb-3">
+                        <label for="montoRestante" class="form-label">Monto Restante</label>
+                        <input type="text" class="form-control" id="montoRestante" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="montoAbono" class="form-label">Monto del Abono</label>
+                        <input type="number" class="form-control" id="montoAbono" min="0" required>
+                    </div>
+                    <input type="hidden" id="idCompra">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarAbono">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-    .Guardar:hover {
-        background-color: deepskyblue;
-    }
-h2 {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 20px;
-}
+@section Scripts {
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $('#btnGuardarAbono').click(function () {
+            const idCompra = $('#idCompra').val();
+            const montoAbono = parseFloat($('#montoAbono').val());
 
-form {
-    border: 1px solid #ddd;
-    padding: 20px;
-    margin-bottom: 30px;
-    border-radius: 10px;
-    background-color: #f8f9fa;
-}
+            if (montoAbono <= 0) {
+                alert('El monto del abono debe ser mayor a 0.');
+                return;
+            }
 
-form div {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
+            $.ajax({
+                url: '/CXPagar/RealizarAbono',
+                type: 'POST',
+                data: { idCompra, montoAbono },
+                xhrFields: {
+                    responseType: 'blob' // Esto permite recibir el archivo como un Blob
+                },
+                success: function (data) {
+                    const url = window.URL.createObjectURL(new Blob([data]));
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', 'FacturaAbono.pdf'); // Nombre del archivo
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
 
-form div label {
-    font-weight: bold;
-    font-size: 1.2rem;
-    margin-right: 10px;
-    width: 150px;
-}
+                    $('#modalAbono').modal('hide');
+                    location.reload(); // Recargar la página para actualizar datos
+                },
+                error: function (error) {
+                    alert(error.responseText);
+                }
+            });
+        });
 
-form div input, form div select {
-    width: calc(100% - 160px);
-    padding: 10px;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
+    </script>
+    <script>
+        $(document).ready(function () {
+            // Cargar las compras desde el controlador
+            $.get('/CXPagar/ObtenerComprasCredito', function (data) {
+                let tableBody = $('#tabla-compras tbody');
+                tableBody.empty();
 
-form div input[type="number"] {
-    text-align: right;
-}
+                // Generar las filas de la tabla
+                data.forEach(function (compra) {
+                    let row = `
+                                <tr>
+                                    <td>${compra.nombreProveedor}</td>
+                                    <td>${compra.nombreProducto}</td>
+                                    <td>${compra.costo}</td>
+                                    <td>${compra.cantidad}</td>
+                                    <td>${compra.precio}</td>
+                                    <td>${compra.montoTotal}</td>
+                                    <td>${compra.montoRestante}</td>
+                                    <td>
+                                        <button class="btn btn-success btn-abonar"
+                                            data-id="${compra.compraId}"
+                                            data-restante="${compra.montoRestante}">
+                                            Abonar
+                                        </button>
+                                    </td>
+                                </tr>`;
+                    tableBody.append(row);
+                });
 
-button[type="submit"] {
-  
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-}
+                // Manejar el clic en el botón "Abonar"
+                $('.btn-abonar').click(function () {
+                    const idCompra = $(this).data('id');
+                    const montoRestante = $(this).data('restante');
 
-button[type="submit"]:hover {
-  
-}
+                    $('#idCompra').val(idCompra);
+                    $('#montoRestante').val(montoRestante);
+                    $('#modalAbono').modal('show');
+                });
+            }).fail(function () {
+                alert('No se pudieron cargar las compras.');
+            });
 
-/* Estilo de la tabla */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background-color: #fff;
+            // Guardar el abono
+       
+        });
+    </script>
 }
-
-table thead th {
-    padding: 15px;
-    background-color: #f1f1f1;
-    text-align: left;
-    font-size: 1.1rem;
-    border-bottom: 2px solid #ddd;
-}
-
-table tbody td {
-    padding: 15px;
-    border-bottom: 1px solid #ddd;
-}
-
-table tbody tr:hover {
-    background-color: #f9f9f9;
-}
-
-table tbody td form {
-    display: inline-block;
-    margin: 0 5px;
-}
-
-.btn {
-    padding: 5px 15px;
-    border-radius: 5px;
-    font-size: 0.9rem;
-}
-
-.btn-success {
-    background-color: #28a745;
-    color: white;
-    border: none;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-}
-
-.btn-success:disabled {
-    background-color: #c3e6cb;
-}
-
-.btn-success:hover:not(:disabled) {
-    background-color: #218838;
-}
-
-.btn-danger:hover {
-    background-color: #c82333;
-}
-
-/* Estilos adicionales */
-textarea {
-    resize: vertical;
-    min-height: 100px;
-}
-
-span.text-danger {
-    color: red;
-    font-size: 0.9rem;
-    margin-top: 5px;
-}
-</style>

@@ -25,7 +25,7 @@ namespace SistemaVenta.AplicacionWeb.Models.ViewModels
         public string total { get; set; }
         public decimal MontoPagar { get; set; }  // Ya existente, según contexto
         public decimal montoRestante { get; set; }
-        public string MetodoPago { get; set; }
+        public string metodoPago { get; set; }
         public string NCF { get; set; }
 
         public List<ProductoViewModel> productos { get; set; }

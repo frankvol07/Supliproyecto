@@ -43,6 +43,8 @@ namespace SistemaVenta.DAL.DBContext
         public virtual DbSet<ConfigRNC> ConfigRNCs { get; set; }
         public virtual DbSet<VentaRNC> VentaRNC { get; set; }
         public virtual DbSet<DetalleTransaccion607> DetalleTransaccion607 { get; set; }
+        public virtual DbSet<Compra> Compras { get; set; }
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -51,6 +53,7 @@ namespace SistemaVenta.DAL.DBContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+          
             modelBuilder.Entity<Categoria>(entity =>
             {
                 entity.HasKey(e => e.IdCategoria)

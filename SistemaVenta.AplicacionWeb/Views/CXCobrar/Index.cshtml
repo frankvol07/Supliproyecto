@@ -44,11 +44,17 @@
                 <label>Total Pendiente</label>
                 <input type="text" class="form-control" value="@ViewData["TotalPendiente"]" disabled />
             </div>
+
         </div>
     </div>
 
     <!-- Tabla de facturas -->
     <form method="post" asp-action="Abonar">
+        <div class="row">
+            <div class="col-md-12 text-right">
+                <button type="submit" class="btn btn-success">Pagar</button>
+            </div>
+        </div>
         <table class="table mt-3 table-bordered">
             <thead>
                 <tr>
@@ -93,10 +99,6 @@
         </table>
 
         <!-- Botón de pagar -->
-        <div class="row">
-            <div class="col-md-12 text-right">
-                <button type="submit" class="btn btn-success">Pagar</button>
-            </div>
-        </div>
+
     </form>
 </div>

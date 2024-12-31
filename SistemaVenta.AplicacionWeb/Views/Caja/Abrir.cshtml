@@ -58,9 +58,240 @@
 
     <button type="button" class="btn btn-primary" onclick="showModal('abrir')" @(ViewBag.Message != null ? "disabled" : "")>Abrir Caja</button>
     <button type="button" class="btn btn-danger" onclick="showModal('cerrar')">Cerrar Caja</button>
+    <!-- Botón para abrir el modal de desglose de billetes -->
+    <button type="button" class="btn btn-info" onclick="abrirModalDesglose()">Actualizar Desglose</button>
+
 </form>
 
+<div class="modal fade" id="desgloseBilletesModal" tabindex="-1" role="dialog" aria-labelledby="desgloseBilletesModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="desgloseBilletesModalLabel">Actualizar Desglose de Billetes</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="desgloseForm">
+                    <!-- Campo para billetes de $2000 -->
+                    <div class="form-group">
+                        <label for="montoInicialModal">Monto Inicial</label>
+                        <input type="text" id="montoInicialModal" class="form-control" value="@Model.MontoInicial" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="monto2000">Billetes de $2000</label>
+                        <input type="number" id="monto2000" name="Monto2000" class="form-control" min="0" value="0" onchange="calcularTotal()">
+                    </div>
+                    <!-- Campo para billetes de $1000 -->
+                    <div class="form-group">
+                        <label for="monto1000">Billetes de $1000</label>
+                        <input type="number" id="monto1000" name="Monto1000" class="form-control" min="0" value="0" onchange="calcularTotal()">
+                    </div>
+                    <!-- Campo para billetes de $500 -->
+                    <div class="form-group">
+                        <label for="monto500">Billetes de $500</label>
+                        <input type="number" id="monto500" name="Monto500" class="form-control" min="0" value="0" onchange="calcularTotal()">
+                    </div>
+                    <!-- Campo para billetes de $200 -->
+                    <div class="form-group">
+                        <label for="monto200">Billetes de $200</label>
+                        <input type="number" id="monto200" name="Monto200" class="form-control" min="0" value="0" onchange="calcularTotal()">
+                    </div>
+                    <!-- Campo para billetes de $100 -->
+                    <div class="form-group">
+                        <label for="monto100">Billetes de $100</label>
+                        <input type="number" id="monto100" name="Monto100" class="form-control" min="0" value="0" onchange="calcularTotal()">
+                    </div>
+                    <!-- Campo para billetes de $50 -->
+                    <div class="form-group">
+                        <label for="monto50">Billetes de $50</label>
+                        <input type="number" id="monto50" name="Monto50" class="form-control" min="0" value="0" onchange="calcularTotal()">
+                    </div>
+                    <!-- Campo para monedas de $25 -->
+                    <div class="form-group">
+                        <label for="monto25">Monedas de $25</label>
+                        <input type="number" id="monto25" name="Monto25" class="form-control" min="0" value="0" onchange="calcularTotal()">
+                    </div>
+                    <!-- Campo para monedas de $10 -->
+                    <div class="form-group">
+                        <label for="monto10">Monedas de $10</label>
+                        <input type="number" id="monto10" name="Monto10" class="form-control" min="0" value="0" onchange="calcularTotal()">
+                    </div>
+                    <!-- Campo para monedas de $5 -->
+                    <div class="form-group">
+                        <label for="monto5">Monedas de $5</label>
+                        <input type="number" id="monto5" name="Monto5" class="form-control" min="0" value="0" onchange="calcularTotal()">
+                    </div>
+                    <!-- Campo para monedas de $1 -->
+                    <div class="form-group">
+                        <label for="monto1">Monedas de $1</label>
+                        <input type="number" id="monto1" name="Monto1" class="form-control" min="0" value="0" onchange="calcularTotal()">
+                    </div>
+                    <!-- Total calculado -->
+
+                    <!-- Total Calculado -->
+                    <div class="form-group">
+                        <label for="totalDesglose">Total Calculado</label>
+                        <input type="text" id="totalDesglose" class="form-control" readonly>
+                    </div>
+
+                    <!-- Campo para Ganancia -->
+                    <div class="form-group">
+                        <label for="ganancia">Ganancia</label>
+                        <input type="text" id="ganancia" name="Ganancia" class="form-control" readonly>
+                    </div>
+
+                    <!-- Campo para Diferencia -->
+                    <div class="form-group">
+                        <label for="diferencia">Diferencia</label>
+                        <input type="text" id="diferencia" name="Diferencia" class="form-control" readonly>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarDesglose()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    /* Estilos para el formulario en el modal */
+    .modal-body {
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+        .form-group label {
+            font-weight: bold;
+        }
+
+    .form-control {
+        width: 100%;
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    /* Estilo específico para los montos, alineando los inputs en línea */
+    .form-group-inline {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+        .form-group-inline .form-control {
+            width: 48%; /* Tomar casi el 50% del espacio disponible */
+        }
+
+    /* Alineación de los totales al final */
+    .form-group-total {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+        .form-group-total .form-control {
+            width: 50%;
+            margin: 0 auto;
+        }
+
+    .modal-header {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #ddd;
+    }
+
+    .modal-footer {
+        background-color: #f8f9fa;
+        border-top: 2px solid #ddd;
+    }
+
+        .modal-footer .btn {
+            width: 100px;
+        }
+
+    /* Estilos de los botones */
+    .btn {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border: none;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border: none;
+    }
+
+    .btn-info {
+        background-color: #17a2b8;
+        border: none;
+    }
+</style>
+
 @section Scripts {
+    <script>
+        function abrirModalDesglose() {
+            document.getElementById("montoInicialModal").value = '@Model.MontoInicial';
+            $('#desgloseBilletesModal').modal('show'); // Mostrar el modal
+        }
+    </script>
+
+    <script>
+        function calcularTotal() {
+            let total = 0;
+            // Obtener el valor del Monto Inicial desde el modal
+            let montoInicial = parseFloat(document.getElementById("montoInicialModal").value) || 0;
+
+            // Calcular el total basado en los campos de billetes
+            total += (parseInt(document.getElementById("monto2000").value) || 0) * 2000;
+            total += (parseInt(document.getElementById("monto1000").value) || 0) * 1000;
+            total += (parseInt(document.getElementById("monto500").value) || 0) * 500;
+            total += (parseInt(document.getElementById("monto200").value) || 0) * 200;
+            total += (parseInt(document.getElementById("monto100").value) || 0) * 100;
+            total += (parseInt(document.getElementById("monto50").value) || 0) * 50;
+            total += (parseInt(document.getElementById("monto25").value) || 0) * 25;
+            total += (parseInt(document.getElementById("monto10").value) || 0) * 10;
+            total += (parseInt(document.getElementById("monto5").value) || 0) * 5;
+            total += (parseInt(document.getElementById("monto1").value) || 0) * 1;
+
+            // Mostrar el total calculado
+            document.getElementById("totalDesglose").value = total;
+
+            // Calcular la diferencia y ganancia
+            let diferencia = total - montoInicial;
+            let ganancia = diferencia > 0 ? diferencia : 0;
+            let perdida = diferencia < 0 ? -diferencia : 0;
+
+            document.getElementById("diferencia").value = diferencia;
+            document.getElementById("ganancia").value = ganancia;
+        }
+
+
+
+        function guardarDesglose() {
+            const data = $('#desgloseForm').serialize(); // Serializa los datos del formulario
+            $.ajax({
+                type: 'POST',
+                url: '/Caja/ActualizarDesglose', // Endpoint para actualizar el desglose
+                data: data,
+                success: function (response) {
+                    alert(response); // Mostrar el mensaje de éxito del servidor
+                    $('#desgloseBilletesModal').modal('hide'); // Cerrar el modal
+                },
+                error: function (xhr) {
+                    alert(`Error: ${xhr.responseText || 'Ocurrió un error'}`); // Mostrar el mensaje de error
+                }
+            });
+        }
+
+    </script>
     <script>
         function showModal(action) {
             // Cambiar la acción del formulario antes de mostrar el modal

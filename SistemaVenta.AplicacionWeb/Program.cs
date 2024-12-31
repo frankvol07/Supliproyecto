@@ -7,6 +7,8 @@ using DinkToPdf;
 using DinkToPdf.Contracts;
 
 using Microsoft.AspNetCore.Authentication.Cookies;
+using SistemaVenta.BLL.Implementacion;
+using System.Globalization;
 
 
 
@@ -57,3 +59,4 @@ app.MapControllerRoute(
     pattern: "{controller=Acceso}/{action=Login}/{id?}");
 
 app.Run();
+

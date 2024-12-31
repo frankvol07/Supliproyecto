@@ -17,6 +17,15 @@ namespace SistemaVenta.Entity
         public bool? EsActivo { get; set; }
         public DateTime? FechaRegistro { get; set; }
 
+        // Nuevos campos agregados
+        public string? Tipo_Venta { get; set; }          // Tipo de venta
+        public string? Presentacion { get; set; }        // Presentación
+        public decimal? Costo { get; set; }              // Costo del producto
+        public decimal? Porcentaje_Ganancia { get; set; } // Porcentaje de ganancia
+        public decimal? Ganancia { get; set; }           // Ganancia en términos monetarios
+       // Precio de venta final
+
         public virtual Categoria? IdCategoriaNavigation { get; set; }
     }
 }
+

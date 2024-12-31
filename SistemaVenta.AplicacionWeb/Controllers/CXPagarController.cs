@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SistemaVenta.AplicacionWeb.Models.ViewModels;
 using SistemaVenta.BLL.Interfaces;
 using SistemaVenta.DAL.DBContext;
 using SistemaVenta.Entity;
+using System.IO;
 
 namespace SistemaVenta.AplicacionWeb.Controllers
 {
@@ -20,94 +23,109 @@ namespace SistemaVenta.AplicacionWeb.Controllers
         public IActionResult Index()
         {
             // Obtener la lista de proveedores para el ViewBag
-            var proveedores = _context.Proveedores
-                .Select(p => new ProveedorViewModel
-                {
-                    IdProveedor = p.IdProveedor,
-                    Nombre = p.Nombre
-                }).ToList();
 
-            ViewBag.Proveedores = proveedores;
-
-            // Crear un diccionario para acceder a los nombres de los proveedores
-            ViewBag.ProveedoresDict = proveedores.ToDictionary(p => p.IdProveedor, p => p.Nombre);
-
-            var viewModel = new FacturaProveedorViewModel
-            {
-                Facturas = _context.FacturaProveedores.ToList()
-            };
-
-            return View(viewModel);
+            return View();
         }
+        [HttpGet]
+        public async Task<JsonResult> ObtenerComprasCredito()
+        {
+            var comprasCredito = await _context.Compras
+                .Where(c => c.FormaPago == "Credito")
+                .Select(c => new CompraViewModel
+                {
+                    CompraId = c.CompraId,
+                    NombreProveedor = c.NombreProveedor,
+                    NombreProducto = c.NombreProducto,
+                    Costo = c.Costo,
+                    Cantidad = c.Cantidad,
+                    Precio = c.Precio,
+                    Descripcion = c.Descripcion,
+                    FormaPago = c.FormaPago,
+                    NoTarjeta = c.NoTarjeta,
+                    NoCuenta = c.NoCuenta,
+                    MontoTotal = c.MontoTotal,
+                    MontoRestante = c.MontoRestante,
+                    NoComprobanteFiscal = c.NoComprobanteFiscal
+                })
+                .ToListAsync();
 
+            return Json(comprasCredito);
+        }
         [HttpPost]
-        public async Task<IActionResult> Index(FacturaProveedorViewModel viewModel)
+        public async Task<IActionResult> RealizarAbono(int idCompra, decimal montoAbono)
         {
-            if (ModelState.IsValid)
+            var compra = await _context.Compras.FindAsync(idCompra);
+            if (compra == null)
             {
-                // Procesar los datos y guardarlos en la base de datos
-                var factura = new FacturaProveedor
+                return NotFound("La compra no existe.");
+            }
+
+            if (montoAbono > compra.MontoRestante)
+            {
+                return BadRequest("El monto del abono no puede ser mayor al monto restante.");
+            }
+
+            // Actualizar el monto restante
+            compra.MontoRestante -= montoAbono;
+            if (compra.MontoRestante < 0)
+            {
+                compra.MontoRestante = 0;
+            }
+
+            _context.Compras.Update(compra);
+            await _context.SaveChangesAsync();
+
+            var negocio = _context.Negocios.FirstOrDefault();
+            if (negocio == null)
+            {
+                return BadRequest("No se encontró información del negocio.");
+            }
+
+            using (var memoryStream = new MemoryStream())
+            {
+                var pageSize = new Rectangle(227, 700);
+                var document = new Document(pageSize, 10, 10, 10, 10);
+                var writer = PdfWriter.GetInstance(document, memoryStream);
+                document.Open();
+
+                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10);
+                var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 8);
+                var tableHeaderFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 8);
+
+                if (!string.IsNullOrEmpty(negocio.UrlLogo))
                 {
-                    ProveedorID = viewModel.ProveedorID,
-                    FechaEmision = DateTime.Now, // Fecha actual
-                    FechaVencimiento = viewModel.FechaVencimiento,
-                    MontoTotal = viewModel.MontoTotal,
-                    Detalle = viewModel.Detalle,
-                    Estado = viewModel.Estado
-                };
+                    var logoImage = Image.GetInstance(negocio.UrlLogo);
+                    logoImage.ScaleToFit(50f, 50f);
+                    logoImage.Alignment = Image.ALIGN_CENTER;
+                    document.Add(logoImage);
+                }
 
-                _context.FacturaProveedores.Add(factura);
-                await _context.SaveChangesAsync();
+                document.Add(new Paragraph(negocio.Nombre ?? "Nombre del Negocio", titleFont) { Alignment = Element.ALIGN_CENTER });
+                document.Add(new Paragraph($"RNC: {negocio.NumeroDocumento}", normalFont) { Alignment = Element.ALIGN_CENTER });
+                document.Add(new Paragraph($"TEL: {negocio.Telefono}", normalFont) { Alignment = Element.ALIGN_CENTER });
+                document.Add(new Paragraph($"{negocio.Direccion}", normalFont) { Alignment = Element.ALIGN_CENTER });
+                document.Add(new Paragraph("\n"));
 
-                // Redirigir después de guardar los datos para evitar que se repita el POST
-                return RedirectToAction(nameof(Index));
+                // Espaciado
+                document.Add(new iTextSharp.text.Paragraph(" "));
+
+
+                // Información de la compra y el abono
+                var textFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 8);
+                document.Add(new iTextSharp.text.Paragraph($"Proveedor: {compra.NombreProveedor}", textFont));
+                document.Add(new iTextSharp.text.Paragraph($"Producto: {compra.NombreProducto}", textFont));
+                document.Add(new iTextSharp.text.Paragraph($"Monto Total: {compra.MontoTotal:C}", textFont));
+                document.Add(new iTextSharp.text.Paragraph($"Monto Abonado: {montoAbono:C}", textFont));
+                document.Add(new iTextSharp.text.Paragraph($"Monto Restante: {compra.MontoRestante:C}", textFont));
+                document.Add(new iTextSharp.text.Paragraph($"Número de Comprobante Fiscal: {compra.NoComprobanteFiscal}", textFont));
+
+                document.Close();
+                var pdfBytes = memoryStream.ToArray();
+
+                return File(pdfBytes, "application/pdf", "FacturaAbono.pdf");
             }
-
-            // Si hay errores de validación, se recarga la misma vista con el modelo actual
-            var proveedores = await _context.Proveedores
-                .ToDictionaryAsync(p => p.IdProveedor, p => p.Nombre);
-            ViewBag.ProveedoresDict = proveedores;
-
-            viewModel.Facturas = await _context.FacturaProveedores.ToListAsync();
-
-            return View(viewModel);
-        }
-        public async Task<IActionResult> MarcarComoPagado(int id)
-        {
-            var factura = await _context.FacturaProveedores.FindAsync(id);
-
-            if (factura == null)
-            {
-                return NotFound();
-            }
-
-            // Cambiar el estado a "Pagado"
-            factura.Estado = "Pagado";
-
-            _context.FacturaProveedores.Update(factura);
-            await _context.SaveChangesAsync();
-
-            // Redirigir a la vista principal después de actualizar
-            return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Eliminar(int id)
-        {
-            var factura = await _context.FacturaProveedores.FindAsync(id);
-
-            if (factura == null)
-            {
-                return NotFound();
-            }
-
-            // Eliminar el registro
-            _context.FacturaProveedores.Remove(factura);
-            await _context.SaveChangesAsync();
-
-            // Redirigir a la vista principal después de eliminar
-            return RedirectToAction(nameof(Index));
-        }
 
     }
-
 }

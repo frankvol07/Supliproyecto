@@ -13,5 +13,12 @@
         public string? Precio { get; set; }
         public int? EsActivo { get; set; }
 
+        // Nuevos campos agregados en el ViewModel
+        public string? Tipo_Venta { get; set; }          // Tipo de venta
+        public string? Presentacion { get; set; }        // Presentación
+        public decimal? Costo { get; set; }              // Costo del producto
+        public decimal? Porcentaje_Ganancia { get; set; } // Porcentaje de ganancia
+        public decimal? Ganancia { get; set; }           // Ganancia en términos monetarios
+       // Precio de venta final
     }
 }

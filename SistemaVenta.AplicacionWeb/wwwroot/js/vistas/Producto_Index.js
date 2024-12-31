@@ -8,9 +8,12 @@
     urlImagen: "",
     precio: 0,
     esActivo: 1,
-
+    Tipo_Venta: "",
+    Presentacion: "",
+    Costo: 0,
+    PorcentajeGanancia: 0,
+    Ganancia: 0
 }
-
 
 let tablaData;
 
@@ -21,6 +24,7 @@ $(document).ready(function () {
             return response.ok ? response.json() : Promise.reject(response);
         })
         .then(responseJson => {
+
             if (responseJson.data.length > 0) {
                 responseJson.data.forEach((item) => {
                     $("#cboCategoria").append(
@@ -30,20 +34,19 @@ $(document).ready(function () {
             }
         })
 
-
-
     tablaData = $('#tbdata').DataTable({
         responsive: true,
         "ajax": {
             "url": '/Producto/Lista',
             "type": "GET",
             "datatype": "json"
+
         },
         "columns": [
             { "data": "idProducto", "visible": false, "searchable": false },
             {
                 "data": "urlImagen", render: function (data) {
-                    return `<img style="height:60px" src="${data} " class="rounded mx - auto d-block"/>`
+                    return `<img style="height:60px" src="${data}" class="rounded mx-auto d-block"/>`
                 }
             },
             { "data": "codigoBarra" },
@@ -52,12 +55,16 @@ $(document).ready(function () {
             { "data": "nombreCategoria" },
             { "data": "stock" },
             { "data": "precio" },
+            { "data": "Tipo_Venta" },
+            { "data": "Presentacion" },
+            { "data": "Costo" },
+            { "data": "PorcentajeGanancia" },
+            { "data": "Ganancia" },
             {
                 "data": "esActivo", render: function (data) {
-                    if (data == 1)
-                        return '<span class="badge badge-info">Activo</span>';
-                    else
-                        return '<span class="badge badge-danger">No Activo</span>';
+                    return data == 1
+                        ? '<span class="badge badge-info">Activo</span>'
+                        : '<span class="badge badge-danger">No Activo</span>';
                 }
             },
             {
@@ -77,7 +84,7 @@ $(document).ready(function () {
                 title: '',
                 filename: 'Reporte Productos',
                 exportOptions: {
-                    columns: [2, 3, 4, 5, 6]
+                    columns: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                 }
             }, 'pageLength'
         ],
@@ -86,7 +93,6 @@ $(document).ready(function () {
         },
     });
 })
-
 
 function mostrarModal(modelo = MODELO_BASE) {
     $("#txtId").val(modelo.idProducto)
@@ -99,15 +105,18 @@ function mostrarModal(modelo = MODELO_BASE) {
     $("#cboEstado").val(modelo.esActivo)
     $("#txtImagen").val("");
     $("#imgProducto").attr("src", modelo.urlImagen)
+    $("#txtTipoVenta").val(modelo.Tipo_Venta)
+    $("#txtPresentacion").val(modelo.Presentacion)
+    $("#txtCosto").val(modelo.Costo)
+    $("#txtPorcentajeGanancia").val(modelo.Porcentaje_Ganancia)
+    $("#txtGanancia").val(modelo.Ganancia)
 
     $("#modalData").modal("show")
 }
 
-
 $("#btnNuevo").click(function () {
     mostrarModal()
 })
-
 
 $("#btnGuardar").click(function () {
 
@@ -120,17 +129,21 @@ $("#btnGuardar").click(function () {
         $(`input[name="${inputs_sin_valor[0].name}"]`).focus()
         return;
     }
+
     const modelo = structuredClone(MODELO_BASE);
     modelo["idProducto"] = parseInt($("#txtId").val())
-    modelo["codigoBarra"] = $("#txtCodigoBarra").val()
-    modelo["marca"] = $("#txtMarca").val()
+    modelo["CodigoBarra"] = $("#txtCodigoBarra").val()
+    modelo["Marca"] = $("#txtMarca").val()
     modelo["descripcion"] = $("#txtDescripcion").val()
     modelo["idCategoria"] = $("#cboCategoria").val()
     modelo["stock"] = $("#txtStock").val()
     modelo["precio"] = $("#txtPrecio").val()
     modelo["esActivo"] = $("#cboEstado").val()
-
-
+    modelo["Tipo_Venta"] = $("#txtTipoVenta").val();
+    modelo["Presentacion"] = $("#txtPresentacion").val()
+    modelo["Costo"] = $("#txtCosto").val()
+    modelo["Porcentaje_Ganancia"] = $("#txtPorcentajeGanancia").val()
+    modelo["Ganancia"] = $("#txtGanancia").val()
 
     const inputFoto = document.getElementById("txtImagen")
 
@@ -148,20 +161,16 @@ $("#btnGuardar").click(function () {
             .then(response => {
                 $("#modalData").find("div.modal-content").LoadingOverlay("hide");
                 return response.ok ? response.json() : Promise.reject(response);
-
             })
             .then(responseJson => {
                 if (responseJson.estado) {
-
                     tablaData.row.add(responseJson.objeto).draw(false)
                     $("#modalData").modal("hide")
                     swal("Listo!", "El producto fue creado", "success")
                 } else {
                     swal("Los sentimos", responseJson.mensaje, "error")
                 }
-
             })
-
     } else {
         fetch("/Producto/Editar", {
             method: "PUT",
@@ -170,11 +179,9 @@ $("#btnGuardar").click(function () {
             .then(response => {
                 $("#modalData").find("div.modal-content").LoadingOverlay("hide");
                 return response.ok ? response.json() : Promise.reject(response);
-
             })
             .then(responseJson => {
                 if (responseJson.estado) {
-
                     tablaData.row(filaSeleccionada).data(responseJson.objeto).draw(false);
                     filaSeleccionada = null;
                     $("#modalData").modal("hide")
@@ -182,28 +189,21 @@ $("#btnGuardar").click(function () {
                 } else {
                     swal("Los sentimos", responseJson.mensaje, "error")
                 }
-
             })
-
     }
 
 })
 
 let filaSeleccionada;
 $("#tbdata tbody").on("click", ".btn-editar", function () {
-
     if ($(this).closest("tr").hasClass("child")) {
         filaSeleccionada = $(this).closest("tr").prev();
     } else {
         filaSeleccionada = $(this).closest("tr");
     }
     const data = tablaData.row(filaSeleccionada).data();
-    console.log(data)
-
     mostrarModal(data);
-
 })
-
 
 $("#tbdata tbody").on("click", ".btn-eliminar", function () {
 
@@ -215,10 +215,9 @@ $("#tbdata tbody").on("click", ".btn-eliminar", function () {
     }
     const data = tablaData.row(fila).data();
 
-
     swal({
         title: "¿Está seguro?",
-        text: `Eliminar el producto"${data.descripcion}"`,
+        text: `Eliminar el producto "${data.descripcion}"`,
         type: "warning",
         showCancelButton: true,
         confirmButtonClass: "btn-danger",
@@ -228,7 +227,6 @@ $("#tbdata tbody").on("click", ".btn-eliminar", function () {
         closeOnCancel: true
     },
         function (respuesta) {
-
             if (respuesta) {
                 $(".showSweetAlert").LoadingOverlay("show");
 
@@ -238,21 +236,16 @@ $("#tbdata tbody").on("click", ".btn-eliminar", function () {
                     .then(response => {
                         $(".showSweetAlert").LoadingOverlay("hide");
                         return response.ok ? response.json() : Promise.reject(response);
-
                     })
                     .then(responseJson => {
                         if (responseJson.estado) {
-
-                            tablaData.row(fila).remove().draw()
-
+                            tablaData.row(fila).remove().draw();
                             swal("Listo!", "El producto fue eliminado", "success")
                         } else {
-                            swal("Los sentimos", responseJson.mensaje, "error")
+                            swal("Lo sentimos", responseJson.mensaje, "error")
                         }
-
                     })
             }
-
         }
-    )
+    );
 })

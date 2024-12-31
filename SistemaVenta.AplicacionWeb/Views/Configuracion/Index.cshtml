@@ -1,0 +1,20 @@
+﻿@model string
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<h2>Configuración de Idioma</h2>
+
+<form asp-action="CambiarIdioma" method="post">
+    <label for="idioma">Selecciona el idioma:</label>
+    <select id="idioma" name="idioma">
+        <option value="es" selected="@(Model == "es")">Español</option>
+        <option value="en" selected="@(Model == "en")">Inglés</option>
+
+    </select>
+    <button type="submit">Guardar</button>
+</form>
+

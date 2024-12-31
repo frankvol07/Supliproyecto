@@ -1,125 +1,87 @@
-﻿$(document).ready(function () {
+﻿// Escuchar cambios en el selector de rango de tiempo
+document.getElementById("rangoTiempo").addEventListener("change", function () {
+    let rangoSeleccionado = this.value;
+    obtenerDatosPorRango(rangoSeleccionado);
+});
 
+// Mantener referencia de los gráficos para poder destruirlos
+let graficos = {};
 
-    $("div.container-fluid").LoadingOverlay("show");
-
-    fetch("/DashBoard/ObtenerResumen")
+// Función para obtener datos en base al rango seleccionado
+function obtenerDatosPorRango(rango) {
+    $("div.container-fluid").LoadingOverlay("show"); // Mostrar un indicador de carga
+    fetch("/DashBoard/ObtenerResumen?Rango=" + rango)
         .then(response => {
             $("div.container-fluid").LoadingOverlay("hide");
             return response.ok ? response.json() : Promise.reject(response);
         })
         .then(responseJson => {
-
+            console.log("Datos obtenidos:", responseJson); // Verifica los datos obtenidos
             if (responseJson.estado) {
+                let d = responseJson.objeto;
 
-                //mostrar datos para las tarjetas
+                // Actualizar datos de las tarjetas
+                $("#totalVenta").text(d.totalVentas);
+                $("#totalIngresos").text(d.totalIngresos);
+                $("#totalProductos").text(d.totalProductos);
+                $("#totalCategorias").text(d.totalCategorias);
 
-                let d = responseJson.objeto
+                // Preparar datos para los gráficos
+                let barchart_labels = d.ventasUltimaSemana.length > 0 ? d.ventasUltimaSemana.map(item => item.fecha) : ["sin resultados"];
+                let barchart_data = d.ventasUltimaSemana.length > 0 ? d.ventasUltimaSemana.map(item => item.total) : [0];
 
-                $("#totalVenta").text(d.totalVentas)
-                $("#totalIngresos").text(d.totalIngresos)
-                $("#totalProductos").text(d.totalProductos)
-                $("#totalCategorias").text(d.totalCategorias)
-              
-                //obtener textos y valores para nuestro grafico de barras
+                let piechart_labels = d.productosTopUltimaSemana.length > 0 ? d.productosTopUltimaSemana.map(item => item.producto) : ["sin resultados"];
+                let piechart_data = d.productosTopUltimaSemana.length > 0 ? d.productosTopUltimaSemana.map(item => item.cantidad) : [0];
 
-                let barchart_labels;
-                let barchart_data;
-
-                if (d.ventasUltimaSemana.length > 0) {
-                    barchart_labels = d.ventasUltimaSemana.map((item) => { return item.fecha })
-                    barchart_data = d.ventasUltimaSemana.map((item) => { return item.total })
-                }
-                else {
-                    barchart_labels = ["sin resultados"]
-                    barchart_data [0]
-                }
-
-                //obtener textos y valores para nuestro grafico de pie
-                let piechar_labels;
-                let piechart_data;
-                if (d.productosTopUltimaSemana.length > 0) {
-                    piechar_labels = d.productosTopUltimaSemana.map((item) => { return item.producto })
-                    piechart_data = d.productosTopUltimaSemana.map((item) => { return item.cantidad })
-                }
-                else {
-                    piechar_labels = ["sin resultados"]
-                    piechart_data[0]
-                }
-
-
-                // Bar Chart Example
-                let controlVenta = document.getElementById("chartVentas");
-                let myBarChart = new Chart(controlVenta, {
-                    type: 'bar',
-                    data: {
-                        labels: barchart_labels,
-                        datasets: [{
-                            label: "Cantidad",
-                            backgroundColor: "#4e73df",
-                            hoverBackgroundColor: "#2e59d9",
-                            borderColor: "#4e73df",
-                            data: barchart_data,
-                        }],
-                    },
-                    options: {
-                        maintainAspectRatio: false,
-                        legend: {
-                            display: false
-                        },
-                        scales: {
-                            xAxes: [{
-                                gridLines: {
-                                    display: false,
-                                    drawBorder: false
-                                },
-                                maxBarThickness: 50,
-                            }],
-                            yAxes: [{
-                                ticks: {
-                                    min: 0,
-                                    maxTicksLimit: 5
-                                }
-                            }],
-                        },
-                    }
-                });
-
-                let controlProducto = document.getElementById("chartProductos");
-                let myPieChart = new Chart(controlProducto, {
-                    type: 'doughnut',
-                    data: {
-                        labels: piechar_labels,
-                        datasets: [{
-                            data: piechart_data,
-                            backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', "#FF785B"],
-                            hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', "#FF5733"],
-                            hoverBorderColor: "rgba(234, 236, 244, 1)",
-                        }],
-                    },
-                    options: {
-                        maintainAspectRatio: false,
-                        tooltips: {
-                            backgroundColor: "rgb(255,255,255)",
-                            bodyFontColor: "#858796",
-                            borderColor: '#dddfeb',
-                            borderWidth: 1,
-                            xPadding: 15,
-                            yPadding: 15,
-                            displayColors: false,
-                            caretPadding: 10,
-                        },
-                        legend: {
-                            display: true
-                        },
-                        cutoutPercentage: 80,
-                    },
-                });
-
-
-
+                // Actualizar gráficos
+                actualizarGrafico("chartVentas", "bar", barchart_labels, barchart_data);
+                actualizarGrafico("chartProductos", "doughnut", piechart_labels, piechart_data);
             }
-
         })
+        .catch(error => {
+            console.error("Error al obtener datos:", error);
+        });
+}
 
-})
+// Función para actualizar o redibujar gráficos
+function actualizarGrafico(id, tipo, labels, data) {
+    // Si ya existe un gráfico, destruirlo antes de crear uno nuevo
+    if (graficos[id]) {
+        graficos[id].destroy();
+    }
+
+    // Crear una nueva instancia del gráfico
+    let ctx = document.getElementById(id).getContext("2d");
+    graficos[id] = new Chart(ctx, {
+        type: tipo,
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: tipo === "bar" ? "#4e73df" : ["#4e73df", "#1cc88a", "#36b9cc", "#FF785B"],
+                hoverBackgroundColor: tipo === "bar" ? "#2e59d9" : ["#2e59d9", "#17a673", "#2c9faf", "#FF5733"],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    displayColors: false,
+                },
+                legend: { display: true },
+            },
+            cutoutPercentage: tipo === "doughnut" ? 80 : 0,
+        },
+    });
+}
+
+// Llamar a la función al cargar la página con el rango predeterminado
+document.addEventListener("DOMContentLoaded", function () {
+    obtenerDatosPorRango(document.getElementById("rangoTiempo").value);
+});

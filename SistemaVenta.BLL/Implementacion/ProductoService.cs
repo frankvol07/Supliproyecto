@@ -15,59 +15,54 @@ namespace SistemaVenta.BLL.Implementacion
     {
         private readonly IGenericRepository<Producto> _repositorio;
         private readonly IFireBaseService _fireBaseServicio;
-   
 
-        public ProductoService(IGenericRepository<Producto> repositorio, 
+        public ProductoService(IGenericRepository<Producto> repositorio,
             IFireBaseService fireBaseService)
         {
             _repositorio = repositorio;
             _fireBaseServicio = fireBaseService;
-     
-
         }
+
         public async Task<List<Producto>> Lista()
         {
             IQueryable<Producto> query = await _repositorio.Consultar();
             return query.Include(c => c.IdCategoriaNavigation).ToList();
-
-
-
         }
-        public async Task<Producto>Crear(Producto entidad, Stream imagen = null, string NombreImagen = "")
+
+        public async Task<Producto> Crear(Producto entidad, Stream imagen = null, string NombreImagen = "")
         {
             Producto producto_existe = await _repositorio.Obtener(p => p.CodigoBarra == entidad.CodigoBarra);
-
 
             if (producto_existe != null)
                 throw new TaskCanceledException("El codigo de barra ya existe");
 
             try
             {
+                // Asignar los nuevos campos
                 entidad.NombreImagen = NombreImagen;
-                if(imagen != null)
+                if (imagen != null)
                 {
                     string urlImage = await _fireBaseServicio.SubirStorage(imagen, "carpeta_producto", NombreImagen);
-                        entidad.UrlImagen = urlImage;
+                    entidad.UrlImagen = urlImage;
                 }
+
+                // Nuevos campos agregado
+         
                 Producto producto_creado = await _repositorio.Crear(entidad);
 
-                if(producto_creado.IdProducto == 0) 
-                
+                if (producto_creado.IdProducto == 0)
                     throw new TaskCanceledException("No se pudo crear el producto");
 
-                    IQueryable<Producto> query = await _repositorio.Consultar(p => p.IdProducto == producto_creado.IdProducto);
+                IQueryable<Producto> query = await _repositorio.Consultar(p => p.IdProducto == producto_creado.IdProducto);
 
-                    producto_creado = query.Include(c =>c.IdCategoriaNavigation).First();
+                producto_creado = query.Include(c => c.IdCategoriaNavigation).First();
 
-
-                    return producto_creado;
-                }
-            
+                return producto_creado;
+            }
             catch (Exception ex)
             {
                 throw;
             }
-
         }
 
         public async Task<Producto> Editar(Producto entidad, Stream imagen = null)
@@ -76,6 +71,7 @@ namespace SistemaVenta.BLL.Implementacion
 
             if (producto_existe != null)
                 throw new TaskCanceledException("El codigo de barra ya existe");
+
             try
             {
                 IQueryable<Producto> queryProducto = await _repositorio.Consultar(p => p.IdProducto == entidad.IdProducto);
@@ -89,12 +85,18 @@ namespace SistemaVenta.BLL.Implementacion
                 producto_para_editar.Precio = entidad.Precio;
                 producto_para_editar.EsActivo = entidad.EsActivo;
 
+                producto_para_editar.Tipo_Venta = entidad.Tipo_Venta;
+                producto_para_editar.Presentacion = entidad.Presentacion;
+                producto_para_editar.Costo = entidad.Costo;
+                producto_para_editar.Porcentaje_Ganancia = entidad.Porcentaje_Ganancia;
+                producto_para_editar.Ganancia = entidad.Ganancia;
+
                 if (imagen != null)
                 {
                     string urlImagen = await _fireBaseServicio.SubirStorage(imagen, "carpeta_producto", producto_para_editar.NombreImagen);
                     producto_para_editar.UrlImagen = urlImagen;
                 }
-                
+
                 bool respuesta = await _repositorio.Editar(producto_para_editar);
 
                 if (!respuesta)
@@ -103,14 +105,11 @@ namespace SistemaVenta.BLL.Implementacion
                 Producto producto_editado = queryProducto.Include(c => c.IdCategoriaNavigation).First();
 
                 return producto_editado;
-
             }
             catch
             {
                 throw;
             }
-             
-
         }
 
         public async Task<bool> Eliminar(int idProducto)
@@ -135,9 +134,6 @@ namespace SistemaVenta.BLL.Implementacion
             {
                 throw;
             }
-
         }
-
-
     }
 }

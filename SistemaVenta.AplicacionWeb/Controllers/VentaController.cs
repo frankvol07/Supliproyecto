@@ -181,15 +181,15 @@ namespace SistemaVenta.AplicacionWeb.Controllers
                 _context.SaveChanges(); // Guarda el pago
 
                 // Redirige a la misma vista después del proceso
-                return RedirectToAction("NuevaVenta");
+                return NoContent(); // O Json(new { success = true });
             }
 
-            // Si hay errores, vuelve a mostrar el formulario
-            return View(model);
+            // Si hay errores, retorna un estado de error
+            return BadRequest(ModelState);
         }
 
 
-        public async Task<IActionResult> Historial(string numeroVenta, string fechaInicio, string fechaFin)
+            public async Task<IActionResult> Historial(string numeroVenta, string fechaInicio, string fechaFin)
         {
             List<VMVenta> vmHistorialVenta = _mapper.Map<List<VMVenta>>(await _ventaServicio.Historial(numeroVenta, fechaInicio, fechaFin));
             return StatusCode(StatusCodes.Status200OK, vmHistorialVenta);
@@ -257,6 +257,20 @@ namespace SistemaVenta.AplicacionWeb.Controllers
                 comprobante.NCF_Restan -= 1;
                 _context.ComprobantesFiscales.Update(comprobante);
                 _context.SaveChanges();
+                var nuevaVentaRNC = new VentaRNC
+                {
+                    RncCedula = factura.documentoCliente ?? "Sin Identificar", // RNC o cédula del cliente
+                    TipoId = "Identificacion", // Asume que es un RNC. Ajusta según el caso.
+                    BienServicioComprado = string.Join(", ", factura.productos.Select(p => p.nombreProducto)), // Lista de productos
+                    Ncf = tipoNCF + ncfActual, // NCF generado
+                    FechaComprobante = DateTime.Now, // Fecha actual
+                    FechaPago = DateTime.Now, // Fecha de pago (puedes cambiar según tu lógica)
+                    TotalMontoFacturado = decimal.TryParse(factura.total, out var total) ? total : 0, // Conversión segura
+                    ItbisFacturado = decimal.TryParse(factura.igv, out var itbis) ? itbis : 0 // Conversión segura // ITBIS facturado
+                };
+
+                _context.VentaRNC.Add(nuevaVentaRNC);
+                _context.SaveChanges();
             }
 
             var negocio = _context.Negocios.FirstOrDefault();
@@ -300,7 +314,7 @@ namespace SistemaVenta.AplicacionWeb.Controllers
                 document.Add(new Paragraph($"Fecha: {DateTime.Now:dd/MM/yyyy}", normalFont));
                 document.Add(new Paragraph($"CLIENTE: {factura.documentoCliente ?? "Sin Identificar"}", normalFont));
                 document.Add(new Paragraph($"Nombre Cliente: {factura.nombreCliente ?? "Cliente Genérico"}", normalFont));
-                document.Add(new Paragraph($"Método de Pago: {factura.MetodoPago}"));
+
                 document.Add(new Paragraph("\n"));
 
                 PdfPTable table = new PdfPTable(4);
@@ -326,6 +340,8 @@ namespace SistemaVenta.AplicacionWeb.Controllers
                 document.Add(new Paragraph($"ITBIS: {factura.igv:C}", normalFont));
                 document.Add(new Paragraph($"Total: {factura.total:C}", normalFont));
                 document.Add(new Paragraph($"Monto Restante: {factura.montoRestante:C}", normalFont));
+                document.Add(new Paragraph($"Método de Pago: {factura.metodoPago ?? "No especificado"}", normalFont));
+
                 document.Add(new Paragraph("\n"));
 
                 document.Add(new Paragraph("GRACIAS POR PREFERIRNOS!!!", normalFont) { Alignment = Element.ALIGN_CENTER });
@@ -337,13 +353,8 @@ namespace SistemaVenta.AplicacionWeb.Controllers
                 Response.ContentType = "application/pdf";
                 return File(memoryStream.ToArray(), "application/pdf");
             }
+
         }
-
-
-
-
-
-
 
         private string IncrementarNCF(string ncfActual)
         {

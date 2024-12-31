@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = "Cuadre de Caja";
+}
+
+<h2>Cuadre de Caja</h2>
+
+<form method="post" asp-action="GenerarReporte">
+    <div class="form-group">
+        <label for="diaSeleccionado">Seleccione el Día</label>
+        <input type="date" id="diaSeleccionado" name="diaSeleccionado" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Generar Reporte</button>
+</form>
+
+

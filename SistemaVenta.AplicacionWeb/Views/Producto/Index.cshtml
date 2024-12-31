@@ -1,145 +1,192 @@
-﻿@model IEnumerable<SistemaVenta.AplicacionWeb.Models.ViewModels.VMProducto>
-
-@{
+﻿@{
     ViewData["Title"] = "Productos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Lista de Productos</h2>
-
 @section Estilos {
+    <!-- ============================================================
+       =ESTILOS PARA ESTA PAGINA
+       ===============================================================-->
     <link rel="stylesheet" href="~/vendor/datatables/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="~/vendor/datatables/extensiones/css/responsive.dataTables.min.css">
     <link rel="stylesheet" href="~/vendor/datatables/extensiones/css/buttons.dataTables.min.css">
+
+
 }
 
-<!-- Botón para Agregar Nuevo Producto -->
-<button class="btn btn-success mb-3" data-toggle="modal" data-target="#modalAgregar">Nuevo Producto</button>
 
-<table class="table table-bordered" id="tbdata" cellspacing="0" style="width:100%">
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Codigo Barra</th>
-            <th>Marca</th>
-            <th>Descripcion</th>
-            <th>Stock</th>
-            <th>Precio</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var producto in Model)
-        {
-            <tr>
-                <td>@producto.IdProducto</td>
-                <td>@producto.CodigoBarra</td>
-                <td>@producto.Marca</td>
-                <td>@producto.Descripcion</td>
-                <td>@producto.Stock</td>
-                <td>@producto.Precio</td>
-                <td>@(producto.EsActivo == 1 ? "Activo" : "No Activo")</td>
-                <td>
-                    <button class="btn btn-warning btn-sm" data-id="@producto.IdProducto" data-toggle="modal" data-target="#modalAgregar">Editar</button>
-                    <a href="@Url.Action("Eliminar2", new { id = producto.IdProducto })" class="btn btn-danger btn-sm">Eliminar</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
 
-<!-- Modal para Agregar/Editar Producto -->
-<div class="modal fade" id="modalAgregar" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalLabel">Agregar / Editar Producto</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+<!-- Begin Page Content -->
+<div class="container-fluid">
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-second-primary">
+            <h6 class="m-0 font-weight-bold text-white">Lista de Productos</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-sm-3">
+                    <button class="btn btn-success" id="btnNuevo"><i class="fas fa-plus-circle"></i> Nuevo Producto</button>
+                </div>
             </div>
-            <div class="modal-body">
-                <form asp-action="Guardar" method="post">
-                    <input type="hidden" name="IdProducto" id="txtId" value="0" />
-                    <div class="form-group">
-                        <label>Codigo Barra</label>
-                        <input name="CodigoBarra" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label>Marca</label>
-                        <input name="Marca" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label>Descripcion</label>
-                        <input name="Descripcion" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label>Stock</label>
-                        <input name="Stock" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label>Precio</label>
-                        <input name="Precio" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label>Estado</label>
-                        <select name="EsActivo" class="form-control">
-                            <option value="1">Activo</option>
-                            <option value="0">No Activo</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
-                </form>
+            <hr />
+            <div class="row">
+                <div class="col-sm-12">
+                    <table class="table table-bordered" id="tbdata" cellspacing="0" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Imagen</th>
+                                <th>Codigo Barra</th>
+                                <th>Marca</th>
+                                <th>Descripcion</th>
+                                <th>Categoria</th>
+                                <th>Stock</th>
+                                <th>Precio</th>
+                                <th>Tipo de Venta</th> <!-- Nuevo campo -->
+                                <th>Presentación</th> <!-- Nuevo campo -->
+                                <th>Costo</th> <!-- Nuevo campo -->
+                                <th>Porcentaje Ganancia</th> <!-- Nuevo campo -->
+                                <th>Ganancia</th> <!-- Nuevo campo -->
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
+    <!--  Modal-->
+    <div class="modal fade" id="modalData" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6>Detalle Producto</h6>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <!-- Modal Body -->
+                <div class="modal-body">
+                    <form>
+                        <input type="hidden" value="0" id="txtId">
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <div class="form-row">
+                                    <div class="form-group col-sm-6">
+                                        <label for="txtCodigoBarra">Codigo Barra</label>
+                                        <input type="text" class="form-control form-control-sm input-validar" id="txtCodigoBarra" name="Codigo Barra">
+                                    </div>
+                                    <div class="form-group col-sm-6">
+                                        <label for="txtMarca">Marca</label>
+                                        <input type="text" class="form-control form-control-sm input-validar" id="txtMarca" name="Marca">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-sm-12">
+                                        <label for="txtDescripcion">Descripcion</label>
+                                        <input type="text" class="form-control form-control-sm input-validar" id="txtDescripcion" name="Descripcion">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-sm-6">
+                                        <label for="cboCategoria">Categoria</label>
+                                        <select class="form-control form-control-sm" id="cboCategoria">
+                                            <option value="0">seleccionar</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-sm-6">
+                                        <label for="txtStock">Stock</label>
+                                        <input type="text" class="form-control form-control-sm input-validar" id="txtStock" name="Stock">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-sm-6">
+                                        <label for="txtPrecio">Precio</label>
+                                        <input type="text" class="form-control form-control-sm input-validar" id="txtPrecio" name="Precio">
+                                    </div>
+                                    <div class="form-group col-sm-6">
+                                        <label for="cboEstado">Estado</label>
+                                        <select class="form-control form-control-sm" id="cboEstado">
+                                            <option value="1">Activo</option>
+                                            <option value="0">No Activo</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <!-- Nuevos campos -->
+                                <div class="form-row">
+                                    <div class="form-group col-sm-6">
+                                        <label for="txtTipoVenta">Tipo de Venta</label>
+                                        <input type="text" class="form-control form-control-sm input-validar" id="txtTipoVenta" name="Tipo_Venta">
+                                    </div>
+                                    <div class="form-group col-sm-6">
+                                        <label for="txtPresentacion">Presentación</label>
+                                        <input type="text" class="form-control form-control-sm input-validar" id="txtPresentacion" name="Presentacion">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-sm-6">
+                                        <label for="txtCosto">Costo</label>
+                                        <input type="text" class="form-control form-control-sm input-validar" id="txtCosto" name="Costo">
+                                    </div>
+                                    <div class="form-group col-sm-6">
+                                        <label for="txtPorcentajeGanancia">Porcentaje de Ganancia</label>
+                                        <input type="text" class="form-control form-control-sm input-validar" id="txtPorcentajeGanancia" name="Porcentaje_Ganancia">
+                                    </div>
+
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-sm-6">
+                                        <label for="txtGanancia">Ganancia</label>
+                                        <input type="text" class="form-control form-control-sm input-validar" id="txtGanancia" name="Ganancia" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-sm-6">
+                                        <label for="txtImagen">Imagen</label>
+                                        <input class="form-control-file" type="file" id="txtImagen" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <img id="imgProducto" style="max-width:200px;" src="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=300" class="rounded mx-auto d-block" alt="...">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-primary btn-sm" type="button" id="btnGuardar">Guardar</button>
+                    <button class="btn btn-danger btn-sm" type="button" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- /.container-fluid -->
 @section Scripts {
+    <!-- ============================================================
+    =SCRIPTS PARA ESTA PAGINA
+    ===============================================================-->
     <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
     <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
     <script src="~/vendor/datatables/extensiones/js/dataTables.responsive.min.js"></script>
+
     <script src="~/vendor/datatables/extensiones/js/dataTables.buttons.min.js"></script>
     <script src="~/vendor/datatables/extensiones/js/jszip.min.js"></script>
     <script src="~/vendor/datatables/extensiones/js/buttons.html5.min.js"></script>
     <script src="~/vendor/datatables/extensiones/js/buttons.print.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            // Inicializa la tabla
-            $('#tbdata').DataTable();
 
-            // Maneja la acción de editar para llenar el formulario con los datos del producto
-            $('body').on('click', 'button[data-id]', function () {
-                var id = $(this).data('id');
-                if (id) {
-                    fetch(`@Url.Action("GetProducto", "Producto")/${id}`)
-                        .then(response => {
-                            if (!response.ok) throw new Error('Network response was not ok');
-                            return response.json();
-                        })
-                        .then(data => {
-                            $('#txtId').val(data.idProducto);
-                            $('[name="CodigoBarra"]').val(data.codigoBarra);
-                            $('[name="Marca"]').val(data.marca);
-                            $('[name="Descripcion"]').val(data.descripcion);
-                            $('[name="Stock"]').val(data.stock);
-                            $('[name="Precio"]').val(data.precio);
-                            $('[name="EsActivo"]').val(data.esActivo);
-                        })
-                        .catch(error => console.error('Error fetching product data:', error));
-                } else {
-                    // Limpiar el modal si es un nuevo producto
-                    $('#txtId').val(0);
-                    $('[name="CodigoBarra"]').val('');
-                    $('[name="Marca"]').val('');
-                    $('[name="Descripcion"]').val('');
-                    $('[name="Stock"]').val('');
-                    $('[name="Precio"]').val('');
-                    $('[name="EsActivo"]').val(1);
-                }
-            });
-        });
-    </script>
+    <script src="~/js/vistas/Producto_Index.js"></script>
 
 
 }

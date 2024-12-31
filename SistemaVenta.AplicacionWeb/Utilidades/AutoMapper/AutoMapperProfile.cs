@@ -69,28 +69,39 @@ namespace SistemaVenta.AplicacionWeb.Utilidades.Automapper
 
             #region Producto
             CreateMap<Producto, VMProducto>()
-                .ForMember(destino =>
-                    destino.EsActivo,
-                    opt => opt.MapFrom(origen => origen.EsActivo == true ? 1 : 0)
-                )
-                .ForMember(destino =>
-                    destino.NombreCategoria,
-                    opt => opt.MapFrom(origen => origen.IdCategoriaNavigation.Descripcion)
-                )
-                .ForMember(destino =>
-                    destino.Precio,
-                    opt => opt.MapFrom(origen => Convert.ToString(origen.Precio.Value, new CultureInfo("es-DO")))
-                );
+                .ForMember(destino => destino.EsActivo,
+                           opt => opt.MapFrom(origen => origen.EsActivo == true ? 1 : 0))
+                .ForMember(destino => destino.NombreCategoria,
+                           opt => opt.MapFrom(origen => origen.IdCategoriaNavigation.Descripcion))
+                .ForMember(destino => destino.Precio,
+                           opt => opt.MapFrom(origen => Convert.ToString(origen.Precio.Value, new CultureInfo("es-DO"))))
+                .ForMember(destino => destino.Tipo_Venta,
+                           opt => opt.MapFrom(origen => origen.Tipo_Venta))  // Mapeo de Tipo_Venta
+                .ForMember(destino => destino.Presentacion,
+                           opt => opt.MapFrom(origen => origen.Presentacion))  // Mapeo de Presentacion
+                .ForMember(destino => destino.Costo,
+                           opt => opt.MapFrom(origen => origen.Costo))  // Mapeo de Costo
+                .ForMember(destino => destino.Porcentaje_Ganancia,
+                           opt => opt.MapFrom(origen => origen.Porcentaje_Ganancia))  // Mapeo de Porcentaje_Ganancia
+                .ForMember(destino => destino.Ganancia,
+                           opt => opt.MapFrom(origen => origen.Ganancia));  // Mapeo de Ganancia
 
             CreateMap<VMProducto, Producto>()
-                .ForMember(destino =>
-                    destino.EsActivo,
-                    opt => opt.MapFrom(origen => origen.EsActivo == 1)
-                )
-                .ForMember(destino =>
-                    destino.Precio,
-                    opt => opt.MapFrom(origen => decimal.Parse(origen.Precio, new CultureInfo("es-DO")))
-                );
+                .ForMember(destino => destino.EsActivo,
+                           opt => opt.MapFrom(origen => origen.EsActivo == 1))
+                .ForMember(destino => destino.Precio,
+                           opt => opt.MapFrom(origen => decimal.Parse(origen.Precio, new CultureInfo("es-DO"))))
+                .ForMember(destino => destino.Tipo_Venta,
+                           opt => opt.MapFrom(origen => origen.Tipo_Venta))  // Mapeo de Tipo_Venta
+                .ForMember(destino => destino.Presentacion,
+                           opt => opt.MapFrom(origen => origen.Presentacion))  // Mapeo de Presentacion
+                .ForMember(destino => destino.Costo,
+                           opt => opt.MapFrom(origen => origen.Costo))  // Mapeo de Costo
+                .ForMember(destino => destino.Porcentaje_Ganancia,
+                           opt => opt.MapFrom(origen => origen.Porcentaje_Ganancia))  // Mapeo de Porcentaje_Ganancia
+                .ForMember(destino => destino.Ganancia,
+                           opt => opt.MapFrom(origen => origen.Ganancia));  // Mapeo de Ganancia
+
             #endregion
 
 

@@ -19,6 +19,6 @@ namespace SistemaVenta.BLL.Interfaces
         Task<Dictionary<string, int>> VentasUltimaSemana();
 
         Task<Dictionary<string, int>> ProductosTopUltimaSemana();
-
+        void SetRango(string rango);
     }
 }
