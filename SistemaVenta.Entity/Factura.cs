@@ -14,7 +14,7 @@ namespace SistemaVenta.Entity
         public decimal MontoTotal { get; set; }      // Monto total
         public string Estado { get; set; }           // Estado de la factura
         public decimal? Abono { get; set; }
-  
+
         public Cliente Cliente { get; set; }          // Cliente relacionado
 
         // Relación con Pagos

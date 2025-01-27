@@ -260,7 +260,7 @@ namespace SistemaVenta.AplicacionWeb.Controllers
                 var nuevaVentaRNC = new VentaRNC
                 {
                     RncCedula = factura.documentoCliente ?? "Sin Identificar", // RNC o cédula del cliente
-                    TipoId = "Identificacion", // Asume que es un RNC. Ajusta según el caso.
+                    TipoId = "ID", // Asume que es un RNC. Ajusta según el caso.
                     BienServicioComprado = string.Join(", ", factura.productos.Select(p => p.nombreProducto)), // Lista de productos
                     Ncf = tipoNCF + ncfActual, // NCF generado
                     FechaComprobante = DateTime.Now, // Fecha actual
@@ -298,8 +298,8 @@ namespace SistemaVenta.AplicacionWeb.Controllers
                 }
 
                 document.Add(new Paragraph(negocio.Nombre ?? "Nombre del Negocio", titleFont) { Alignment = Element.ALIGN_CENTER });
-                document.Add(new Paragraph($"RNC: {negocio.NumeroDocumento}", normalFont) { Alignment = Element.ALIGN_CENTER });
-                document.Add(new Paragraph($"TEL: {negocio.Telefono}", normalFont) { Alignment = Element.ALIGN_CENTER });
+                document.Add(new Paragraph($" {negocio.NumeroDocumento}", normalFont) { Alignment = Element.ALIGN_CENTER });
+                document.Add(new Paragraph($" {negocio.Telefono}", normalFont) { Alignment = Element.ALIGN_CENTER });
                 document.Add(new Paragraph($"{negocio.Direccion}", normalFont) { Alignment = Element.ALIGN_CENTER });
                 document.Add(new Paragraph("\n"));
 
@@ -311,9 +311,9 @@ namespace SistemaVenta.AplicacionWeb.Controllers
                     document.Add(new Paragraph($"Fecha de Vencimiento: {fechaVencimiento:dd/MM/yyyy}", normalFont));
                 }
 
-                document.Add(new Paragraph($"Fecha: {DateTime.Now:dd/MM/yyyy}", normalFont));
-                document.Add(new Paragraph($"CLIENTE: {factura.documentoCliente ?? "Sin Identificar"}", normalFont));
-                document.Add(new Paragraph($"Nombre Cliente: {factura.nombreCliente ?? "Cliente Genérico"}", normalFont));
+                document.Add(new Paragraph($"Date: {DateTime.Now:dd/MM/yyyy}", normalFont));
+                document.Add(new Paragraph($"Cliente: {factura.documentoCliente ?? "Sin Identificar"}", normalFont));
+                document.Add(new Paragraph($"Nombre: {factura.nombreCliente ?? "Cliente Genérico"}", normalFont));
 
                 document.Add(new Paragraph("\n"));
 
@@ -321,10 +321,10 @@ namespace SistemaVenta.AplicacionWeb.Controllers
                 table.WidthPercentage = 100;
                 table.SetWidths(new float[] { 1, 3, 1, 1 });
 
-                table.AddCell(new PdfPCell(new Phrase("Cant", normalFont)) { Border = 0 });
-                table.AddCell(new PdfPCell(new Phrase("Descripcion", normalFont)) { Border = 0 });
+                table.AddCell(new PdfPCell(new Phrase("Cantidad", normalFont)) { Border = 0 });
+                table.AddCell(new PdfPCell(new Phrase("Producto", normalFont)) { Border = 0 });
                 table.AddCell(new PdfPCell(new Phrase("Precio", normalFont)) { Border = 0 });
-                table.AddCell(new PdfPCell(new Phrase("Valor", normalFont)) { Border = 0 });
+                table.AddCell(new PdfPCell(new Phrase("Total", normalFont)) { Border = 0 });
 
                 foreach (var producto in factura.productos)
                 {
@@ -337,14 +337,14 @@ namespace SistemaVenta.AplicacionWeb.Controllers
                 document.Add(table);
                 document.Add(new Paragraph("\n"));
                 document.Add(new Paragraph($"SubTotal: {factura.subTotal:C}", normalFont));
-                document.Add(new Paragraph($"ITBIS: {factura.igv:C}", normalFont));
+                document.Add(new Paragraph($"ITBIS {factura.igv:C}", normalFont));
                 document.Add(new Paragraph($"Total: {factura.total:C}", normalFont));
                 document.Add(new Paragraph($"Monto Restante: {factura.montoRestante:C}", normalFont));
-                document.Add(new Paragraph($"Método de Pago: {factura.metodoPago ?? "No especificado"}", normalFont));
+                document.Add(new Paragraph($"Metodo de pago: {factura.metodoPago ?? "No especificado"}", normalFont));
 
                 document.Add(new Paragraph("\n"));
 
-                document.Add(new Paragraph("GRACIAS POR PREFERIRNOS!!!", normalFont) { Alignment = Element.ALIGN_CENTER });
+                document.Add(new Paragraph("THANK YOU FOR CHOOSING US!!!", normalFont) { Alignment = Element.ALIGN_CENTER });
 
                 document.Close();
                 writer.Close();

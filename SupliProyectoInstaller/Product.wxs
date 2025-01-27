@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Bundle Name="SupliProyecto Installer"
+          Version="1.0.0.0"
+          Manufacturer="MiEmpresa"
+          UpgradeCode="PUT-YOUR-GUID-HERE">
+
+    <!-- Usar una aplicación estándar para el bootstrapper -->
+    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication" />
+
+    <Chain>
+      <!-- Instalar SQL Server 2018 Express -->
+      <ExePackage
+        Id="SqlServerExpress"
+        SourceFile="https://aka.ms/sqlserver2019express"
+        InstallCommand="/quiet"
+        Compressed="yes"
+        DetectCondition="NOT InstalledSQLServer" />
+
+      <!-- Instalar el .NET SDK 6.0 -->
+      <ExePackage
+        Id="DotNetSdk"
+        SourceFile="https://download.visualstudio.microsoft.com/download/pr/45b0b568-81d0-4b9b-81a6-8c7c9181bba5/ffbdcbfef12fdd3be62e1c4169392f60/dotnet-sdk-6.0.200-win-x64.exe"
+        InstallCommand="/quiet"
+        Compressed="yes"
+        DetectCondition="NOT InstalledDotNetSdk" />
+
+      <!-- Ejecutar el script SQL para crear la base de datos -->
+      <CustomAction Id="PRUEBAESTRUCTURA"
+                    BinaryKey="SqlScriptBinary"
+                    Execute="deferred"
+                    Return="check"
+                    Impersonate="no" />
+
+      <!-- Instalar la aplicación -->
+      <MsiPackage SourceFile=".\MiAplicacion.msi" />
+    </Chain>
+
+    <!-- Incluir el archivo SQL como un binario -->
+    <Fragment>
+      <Binary Id="SqlScriptBinary" SourceFile=".\PRUEBAESTRUCTURA.sql" />
+    </Fragment>
+  </Bundle>
+</Wix>

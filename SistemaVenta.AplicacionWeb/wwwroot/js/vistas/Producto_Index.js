@@ -55,11 +55,8 @@ $(document).ready(function () {
             { "data": "nombreCategoria" },
             { "data": "stock" },
             { "data": "precio" },
-            { "data": "Tipo_Venta" },
-            { "data": "Presentacion" },
-            { "data": "Costo" },
-            { "data": "PorcentajeGanancia" },
-            { "data": "Ganancia" },
+           
+           
             {
                 "data": "esActivo", render: function (data) {
                     return data == 1

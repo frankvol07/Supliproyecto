@@ -14,8 +14,6 @@
 
 }
 
-
-
 <!-- Begin Page Content -->
 <div class="container-fluid">
     <!-- DataTales Example -->
@@ -120,15 +118,22 @@
                                         </select>
                                     </div>
                                 </div>
-                                <!-- Nuevos campos -->
+                                
                                 <div class="form-row">
                                     <div class="form-group col-sm-6">
-                                        <label for="txtTipoVenta">Tipo de Venta</label>
-                                        <input type="text" class="form-control form-control-sm input-validar" id="txtTipoVenta" name="Tipo_Venta">
+                                        <label for="txtTipoVenta">Tipo de venta</label>
+                                        <select class="form-control form-control-sm" id="txtTipoVenta">
+                                            <option>Producto</option>
+                                            <option>Servicio</option>
+                                        </select>
                                     </div>
                                     <div class="form-group col-sm-6">
-                                        <label for="txtPresentacion">Presentación</label>
-                                        <input type="text" class="form-control form-control-sm input-validar" id="txtPresentacion" name="Presentacion">
+                                        <label for="txtPresentacion">Presentacion</label>
+                                        <select class="form-control form-control-sm" id="txtPresentacion">
+                                            <option>Unidad</option>
+                                            <option>Caja</option>
+                                            <option>Libra</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="form-row">
@@ -187,6 +192,34 @@
     <script src="~/vendor/datatables/extensiones/js/buttons.print.min.js"></script>
 
     <script src="~/js/vistas/Producto_Index.js"></script>
+    <script>
+        // Espera a que el DOM esté completamente cargado
+        $(document).ready(function () {
+            // Referencia a los campos
+            const $txtCosto = $("#txtCosto");
+            const $txtPorcentajeGanancia = $("#txtPorcentajeGanancia");
+            const $txtGanancia = $("#txtGanancia");
+            const $txtPrecio = $("#txtPrecio");
 
+            // Función para calcular la ganancia y el precio
+            function calcularGananciaYPrecio() {
+                // Obtener los valores de los campos
+                const costo = parseFloat($txtCosto.val()) || 0;
+                const porcentajeGanancia = parseFloat($txtPorcentajeGanancia.val()) || 0;
+
+                // Calcular ganancia y precio
+                const ganancia = (costo * porcentajeGanancia) / 100;
+                const precio = costo + ganancia;
+
+                // Actualizar los campos de ganancia y precio
+                $txtGanancia.val(ganancia.toFixed(2)); // Redondea a 2 decimales
+                $txtPrecio.val(precio.toFixed(2)); // Redondea a 2 decimales
+            }
+
+            // Escuchar eventos de cambio en los campos de costo y porcentaje de ganancia
+            $txtCosto.on("input", calcularGananciaYPrecio);
+            $txtPorcentajeGanancia.on("input", calcularGananciaYPrecio);
+        });
+    </script>
 
 }

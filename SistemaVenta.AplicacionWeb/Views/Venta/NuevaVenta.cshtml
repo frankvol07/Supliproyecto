@@ -334,52 +334,59 @@
 
         </script>
         <script>
-            document.getElementById("btnTerminarVenta").addEventListener("click", function () {
-                const data = {
-                    clienteId: document.getElementById("txtClienteId").value,
-                    nombreCliente: document.getElementById("txtNombreCliente").value,
-                    documentoCliente: document.getElementById("txtDocumentoCliente").value,
-                    tipoComprobante: document.getElementById("cboTipoComprobante").value, // Tipo de comprobante
-                    tipoDocumento: document.getElementById("cboTipoDocumentoVenta").value,
-                    subTotal: document.getElementById("txtSubTotal").value,
-                    igv: document.getElementById("txtIGV").value,
-                    total: document.getElementById("txtTotal").value,
-                    montoPagar: parseFloat(document.getElementById("txtMontoPagar").value) || 0,
-                    montoRestante: document.getElementById("txtMontoRestante").value,
-                    metodoPago: document.getElementById("cboMetodoPago").value,
-                    productos: Array.from(document.querySelectorAll("#tbProducto tbody tr")).map(row => ({
-                        nombreProducto: row.cells[1].innerText,
-                        cantidad: row.cells[2].innerText,
-                        precio: row.cells[3].innerText,
-                        total: row.cells[4].innerText
-                    }))
-                };
+        document.getElementById("btnTerminarVenta").addEventListener("click", function () {
+            const data = {
+                clienteId: document.getElementById("txtClienteId").value,
+                nombreCliente: document.getElementById("txtNombreCliente").value,
+                documentoCliente: document.getElementById("txtDocumentoCliente").value,
+                tipoComprobante: document.getElementById("cboTipoComprobante").value, // Tipo de comprobante
+                tipoDocumento: document.getElementById("cboTipoDocumentoVenta").value,
+                subTotal: document.getElementById("txtSubTotal").value,
+                igv: document.getElementById("txtIGV").value,
+                total: document.getElementById("txtTotal").value,
+                montoPagar: parseFloat(document.getElementById("txtMontoPagar").value) || 0,
+                montoRestante: document.getElementById("txtMontoRestante").value,
+                metodoPago: document.getElementById("cboMetodoPago").value,
+                productos: Array.from(document.querySelectorAll("#tbProducto tbody tr")).map(row => ({
+                    nombreProducto: row.cells[1].innerText,
+                    cantidad: row.cells[2].innerText,
+                    precio: row.cells[3].innerText,
+                    total: row.cells[4].innerText
+                }))
+            };
 
-                fetch(`/Venta/GenerarFactura?tipoComprobante=${document.getElementById("cboTipoComprobante").value}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
+            fetch(`/Venta/GenerarFactura?tipoComprobante=${document.getElementById("cboTipoComprobante").value}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.blob();
                 })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.blob();
-                    })
-                    .then(blob => {
-                        const url = window.URL.createObjectURL(blob);
-                        const printWindow = window.open(url);
-                        printWindow.onload = () => {
-                            printWindow.print();
-                            printWindow.onafterprint = () => {
-                                printWindow.close();
-                            };
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+
+                    // Crear un objeto iframe invisible para cargar el PDF
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = url;
+                    document.body.appendChild(iframe);
+
+                    // Imprimir automáticamente tan pronto como el iframe cargue
+                    iframe.onload = () => {
+                        iframe.contentWindow.print();  // Imprime el PDF cargado en el iframe
+                        iframe.contentWindow.onafterprint = () => {
+                            document.body.removeChild(iframe);  // Elimina el iframe después de imprimir
                         };
-                    })
-                    .catch(error => console.error('Error:', error));
-            });
+                    };
+                })
+                .catch(error => console.error('Error:', error));
+        });
 
 
 

@@ -1,0 +1,8 @@
+<Fragment>
+  <ComponentGroup Id="AppComponents" Directory="INSTALLFOLDER">
+    <Component Id="SupliProyectoWeb" Guid="PUT-GUID-HERE">
+      <File Source="C:\Users\User\Desktop\INSTALACIONPRUEBA\SistemaVenta.AplicacionWeb.exe" />
+      <File Source="C:\Users\User\Desktop\PROYECTO SUPLI 2024\Supliproyecto\*.*" />
+    </Component>
+  </ComponentGroup>
+</Fragment>
